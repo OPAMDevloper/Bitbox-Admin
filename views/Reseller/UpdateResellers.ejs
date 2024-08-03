@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Reseller</title>
+    <link rel="stylesheet" href="/css/resellers-page.css">
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .popup-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="Logo" style="max-width: 100px; height: auto;">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px; color: black; font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %>
+            <form action="/api/auth/logout" method="POST" style="margin-right: 10px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;width: 100px;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <div class="container" style="margin-top: 8%;">
+        <div class="reseller-list">
+            <h2>Resellers List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reseller Name</th>
+                        <th>Reseller Email</th>
+                        <th>Phone Number</th>
+                        <th>City</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerTableBody">
+                    <% resellers.forEach(reseller => { %>
+                        <tr>
+                            <td><%= reseller.name %></td>
+                            <td><%= reseller.contactPersonEmail %></td>
+                            <td><%= reseller.contactPersonPhone %></td>
+                            <td><%= reseller.city %></td>
+                            <td><%= reseller.status %></td>
+                            <td>
+                                <button class="update-button" data-id="<%= reseller._id %>" onclick="editReseller('<%= reseller._id %>')">Edit</button>
+                                <button class="delete-button" data-id="<%= reseller._id %>" onclick="deleteReseller('<%= reseller._id %>')">Delete</button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="updatePopup" class="popup" style="font-family: Arial, sans-serif;">
+        <div class="popup-content" style="width: 70%; margin: auto; border: 2px solid black; border-radius: 10px; padding: 20px; background-color: #f9f9f9;margin-top: 6%; max-height: 80vh; overflow-y: auto;">
+            <span class="close" style="float: right; cursor: pointer; font-size: 20px;">&times;</span>
+            <h2 style="text-align: center; color: black;">Update Reseller</h2>
+            <form id="updateResellerForm" enctype="multipart/form-data">
+                <input type="hidden" id="resellerId" name="resellerId">
+    
+                <label for="updateName" style="color: black; font-weight: bold;">Name:</label>
+                <input type="text" id="updateName" name="name" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateCompanyName" style="color: black; font-weight: bold;">Company Name:</label>
+                <input type="text" id="updateCompanyName" name="companyName" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateBusinessAddress" style="color: black; font-weight: bold;">Business Address:</label>
+                <input type="text" id="updateBusinessAddress" name="businessAddress" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateCity" style="color: black; font-weight: bold;">City:</label>
+                <input type="text" id="updateCity" name="city" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateState" style="color: black; font-weight: bold;">State:</label>
+                <input type="text" id="updateState" name="state" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateContactPersonName" style="color: black; font-weight: bold;">Contact Person Name:</label>
+                <input type="text" id="updateContactPersonName" name="contactPersonName" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateContactPersonDesignation" style="color: black; font-weight: bold;">Contact Person Designation:</label>
+                <input type="text" id="updateContactPersonDesignation" name="contactPersonDesignation" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateContactPersonEmail" style="color: black; font-weight: bold;">Contact Person Email:</label>
+                <input type="email" id="updateContactPersonEmail" name="contactPersonEmail" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateContactPersonPhone" style="color: black; font-weight: bold;">Contact Person Phone:</label>
+                <input type="text" id="updateContactPersonPhone" name="contactPersonPhone" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateBusinessProfile" style="color: black; font-weight: bold;">Business Profile:</label>
+                <textarea id="updateBusinessProfile" name="businessProfile" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"></textarea><br>
+    
+                <label for="updateTypeOfBusiness" style="color: black; font-weight: bold;">Type of Business:</label>
+                <input type="text" id="updateTypeOfBusiness" name="typeOfBusiness" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateYearOfEstablishment" style="color: black; font-weight: bold;">Year of Establishment:</label>
+                <input type="text" id="updateYearOfEstablishment" name="yearOfEstablishment" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateGstNumber" style="color: black; font-weight: bold;">GST Number:</label>
+                <input type="text" id="updateGstNumber" name="gstNumber" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updatePanNumber" style="color: black; font-weight: bold;">PAN Number:</label>
+                <input type="text" id="updatePanNumber" name="panNumber" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateCertificationsAffiliations" style="color: black; font-weight: bold;">Certifications/Affiliations:</label>
+                <input type="text" id="updateCertificationsAffiliations" name="certificationsAffiliations" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateBriefDescription" style="color: black; font-weight: bold;">Brief Description:</label>
+                <textarea id="updateBriefDescription" name="briefDescription" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"></textarea><br>
+    
+                <label for="updateTypeOfIndustry" style="color: black; font-weight: bold;">Type of Industry:</label>
+                <input type="text" id="updateTypeOfIndustry" name="typeOfIndustry" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateProminentClients" style="color: black; font-weight: bold;">Prominent Clients:</label>
+                <input type="text" id="updateProminentClients" name="prominentClients" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateExperienceExpertise" style="color: black; font-weight: bold;">Experience/Expertise:</label>
+                <textarea id="updateExperienceExpertise" name="experienceExpertise" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"></textarea><br>
+    
+                <label for="updateBrandsDealtWith" style="color: black; font-weight: bold;">Brands Dealt With:</label>
+                <input type="text" id="updateBrandsDealtWith" name="brandsDealtWith" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateBranchLocations" style="color: black; font-weight: bold;">Branch Locations:</label>
+                <input type="text" id="updateBranchLocations" name="branchLocations" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateWarehouseFacilities" style="color: black; font-weight: bold;">Warehouse Facilities:</label>
+                <input type="text" id="updateWarehouseFacilities" name="warehouseFacilities" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateTechnicalSupportStaff" style="color: black; font-weight: bold;">Technical Support Staff:</label>
+                <input type="text" id="updateTechnicalSupportStaff" name="technicalSupportStaff" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateAnnualTurnover" style="color: black; font-weight: bold;">Annual Turnover:</label>
+                <input type="text" id="updateAnnualTurnover" name="annualTurnover" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateLastYearBusinessValue" style="color: black; font-weight: bold;">Last Year Business Value:</label>
+                <input type="text" id="updateLastYearBusinessValue" name="lastYearBusinessValue" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateBankDetails" style="color: black; font-weight: bold;">Bank Details:</label>
+                <textarea id="updateBankDetails" name="bankDetails" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"></textarea><br>
+    
+                <label for="updateGemSellerId" style="color: black; font-weight: bold;">GeM Seller ID:</label>
+                <input type="text" id="updateGemSellerId" name="gemSellerId" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateGemSellerRating" style="color: black; font-weight: bold;">GeM Seller Rating:</label>
+                <input type="text" id="updateGemSellerRating" name="gemSellerRating" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateAdditionalInfo" style="color: black; font-weight: bold;">Additional Info:</label>
+                <textarea id="updateAdditionalInfo" name="additionalInfo" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"></textarea><br>
+    
+                <label for="updateBitboxAccountManager" style="color: black; font-weight: bold;">Bitbox Account Manager:</label>
+                <input type="text" id="updateBitboxAccountManager" name="bitboxAccountManager" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+    
+                <label for="updateGstCertificate" style="color: black; font-weight: bold;">GST Certificate:</label>
+            
+                <input type="file" id="updateGstCertificate" name="gstCertificate" accept=".pdf,.jpg,.jpeg,.png" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;"><br>
+                <span id="updateGstCertificateLink"></span>
+    
+                <label for="updatePanCard" style="color: black; font-weight: bold;">PAN Card:</label>
+                <input type="file" id="updatePanCard" name="panCard" accept=".pdf,.jpg,.jpeg,.png" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <div id="updatePanCardLink" style="margin-bottom: 15px;"></div>
+
+                <label for="updateMsmeCertificate" style="color: black; font-weight: bold;">MSME Certificate:</label>
+                <input type="file" id="updateMsmeCertificate" name="msmeCertificate" accept=".pdf,.jpg,.jpeg,.png" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <div id="updateMsmeCertificateLink" style="margin-bottom: 15px;"></div>
+
+                <label for="updatePlStatement" style="color: black; font-weight: bold;">P&L Statement:</label>
+                <input type="file" id="updatePlStatement" name="plStatement" accept=".pdf,.xlsx,.xls" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <div id="updatePlStatementLink" style="margin-bottom: 15px;"></div>
+
+                <label for="updateGemSellerIdScreenshot" style="color: black; font-weight: bold;">GeM Seller ID Screenshot:</label>
+                <input type="file" id="updateGemSellerIdScreenshot" name="gemSellerIdScreenshot" accept=".jpg,.jpeg,.png" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <div id="updateGemSellerIdScreenshotLink" style="margin-bottom: 15px;"></div>
+
+                <label for="updateDeclarationForm" style="color: black; font-weight: bold;">Declaration Form:</label>
+                <input type="file" id="updateDeclarationForm" name="declarationForm" accept=".pdf" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <div id="updateDeclarationFormLink" style="margin-bottom: 15px;"></div>
+
+            <label for="updateStatus" style="color: black; font-weight: bold;">Status:</label>
+            <select id="updateStatus" name="status" style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select><br>
+
+            <button type="submit" style="width: 100%; background-color: orange; color: white; padding: 14px 20px; margin: 8px 0; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Update Reseller</button>
+        </form>
+    </div>
+</div>
+    
+    <script>
+        const popup = document.getElementById('updatePopup');
+        const closeBtn = document.getElementsByClassName('close')[0];
+    
+        function editReseller(resellerId) {
+    fetch(`/api/resellerManagement/reseller/${resellerId}`)
+        .then(response => response.json())
+        .then(reseller => {
+            document.getElementById('resellerId').value = reseller._id;
+            for (let key in reseller) {
+                if (reseller.hasOwnProperty(key)) {
+                    const element = document.getElementById(`update${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                    if (element) {
+                        if (element.type !== 'file') {
+                            element.value = reseller[key];
+                        } else {
+                            // For file inputs, show the link if a file exists
+                            const linkContainer = document.getElementById(`${element.id}Link`);
+                            if (linkContainer) {
+                                if (reseller[key]) {
+                                    linkContainer.innerHTML = `Current file: <a href="https://bitbox-admin.onrender.com/${reseller[key]}" target="_blank">${reseller[key]}</a>`;
+                                } else {
+                                    linkContainer.innerHTML = 'No file uploaded';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            popup.style.display = 'block';
+        })
+        .catch(error => console.error('Error fetching reseller:', error));
+}
+        closeBtn.onclick = function() {
+            popup.style.display = 'none';
+        }
+    
+        window.onclick = function(event) {
+            if (event.target == popup) {
+                popup.style.display = 'none';
+            }
+        }
+    
+        document.getElementById('updateResellerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            const formData = new FormData(this);
+            const resellerId = formData.get('resellerId');
+    
+            fetch(`/api/resellerManagement/update-reseller/${resellerId}`, {
+                method: 'PUT',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                popup.style.display = 'none';
+                fetchResellers();
+            })
+            .catch(error => console.error('Error updating reseller:', error));
+        });
+    
+        function fetchResellers() {
+            fetch('/api/resellerManagement/resellers-page')
+                .then(response => response.json())
+                .then(data => {
+                    const resellerTableBody = document.getElementById('resellerTableBody');
+                    resellerTableBody.innerHTML = '';
+    
+                    data.forEach(reseller => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${reseller.name}</td>
+                            <td>${reseller.contactPersonEmail}</td>
+                            <td>${reseller.contactPersonPhone}</td>
+                            <td>${reseller.city}</td>
+                            <td>${reseller.status}</td>
+                            <td>
+                                <button class="update-button" data-id="${reseller._id}" onclick="editReseller('${reseller._id}')">Edit</button>
+                                <button class="delete-button" data-id="${reseller._id}" onclick="deleteReseller('${reseller._id}')">Delete</button>
+                            </td>
+                        `;
+                        resellerTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching resellers:', error));
+        }
+    
+        function deleteReseller(resellerId) {
+            fetch(`/api/resellerManagement/delete-reseller/${resellerId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Reseller deleted successfully.');
+                    fetchResellers();
+                } else {
+                    alert('Failed to delete reseller.');
+                }
+            })
+            .catch(error => console.error('Error deleting reseller:', error));
+        }
+    
+        document.addEventListener('DOMContentLoaded', fetchResellers);
+    </script>
+</body>
+</html>

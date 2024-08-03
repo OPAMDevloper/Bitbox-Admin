@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color:black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (username) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 10px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+    
+    <div class="dashboard" style="margin-top: 8%;">
+        <h1>Dashboard</h1>
+        <div class="stats-container">
+            <% if (accessTo.includes('UserManagement')) { %>
+            <div class="stat-box" style="background-color: #ffc03d; cursor: pointer;" onclick="redirectTo('/api/userManagement/usermanagement')">
+                <div class="stat-title">User Management</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('WarrantyManagement')) { %>
+            <div class="stat-box" style="background-color: #b0b3c6; cursor: pointer;" onclick="redirectTo('/api/warrantyManagement')">
+                <div class="stat-title">Warranty Management</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('InventoryManagement')) { %>
+            <div class="stat-box" style="background-color: #ffc03d; cursor: pointer;" onclick="redirectTo('/api/inventoryManagement')">
+                <div class="stat-title">Inventory Management</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('DriverManagement')) { %>
+            <div class="stat-box" style="background-color: #b0b3c6; cursor: pointer;" onclick="redirectTo('/api/driverManagement')">
+                <div class="stat-title">Driver Management</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('TicketSystem')) { %>
+            <div class="stat-box" style="background-color: #ffc03d; cursor: pointer;" onclick="redirectTo('/api/ticketManagement')">
+                <div class="stat-title">Ticket System</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('ResellerManagement')) { %>
+            <div class="stat-box" style="background-color: #b0b3c6; cursor: pointer;" onclick="redirectTo('/api/resellerManagement')">
+                <div class="stat-title">Reseller Management</div>
+            </div>
+            <% } %>
+            <% if (accessTo.includes('EmailManagement')) { %>
+                <div class="stat-box" style="background-color: #b0b3c6; cursor: pointer;" onclick="redirectTo('/api/emailManagement')">
+                    <div class="stat-title">Email Management</div>
+                </div>
+                <% } %>
+
+                <% if (accessTo.includes('EmailManagement')) { %>
+                <div class="stat-box" style="background-color: #ffc03d; cursor: pointer;" onclick="redirectTo('/api/warrantyType')">
+                    <div class="stat-title">Warranty Type</div>
+                </div>
+                <% } %>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    function redirectTo(page) {
+        window.location.href = page;
+    }
+</script>

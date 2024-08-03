@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 80px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #ff6900;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff3e6;
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #ffcc99;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        button, input[type="submit"] {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: #e05d00;
+        }
+
+        .delete-btn {
+            background-color: #ff0000;
+        }
+
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .update-btn {
+            background-color: #ffcc00;
+            color: #333;
+        }
+
+        .update-btn:hover {
+            background-color: #e6b800;
+        }
+
+        a {
+            display: inline-block;
+            text-align: center;
+            background-color: #ff6900;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #e05d00;
+        }
+
+        .search-bar {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .search-bar input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .popup input, .popup label {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .popup button {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .popup button:hover {
+            background-color: #e05d00;
+        }
+
+        .popup .cancel-btn {
+            background-color: #ccc;
+        }
+
+        .popup .cancel-btn:hover {
+            background-color: #999;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Add styles for the pagination container */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Add styles for individual pagination buttons */
+        .pagination button {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        /* Add styles for pagination buttons on hover */
+        .pagination button:hover {
+            background-color: #e05d00;
+        }
+
+        /* Add styles for the active pagination button */
+        .pagination button.active {
+            background-color: #e05d00;
+        }
+
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="BitBox Logo">
+        </div>
+        <div class="title" style="font-size: 1.2em;color: black;font-weight: 600;margin-right: 100px;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 10px; background-color: #b0b3c6; border: none; align-items: end; justify-content: end; text-align: end; width: 0; margin-right: 100px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container">
+        <h2>Search Serial Numbers</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by Serial Number..." oninput="filterSerials()">
+        </div>
+        <p id="noResultsMessage" style="display: none; text-align: center; color: red;">No results found</p>
+
+        <div class="serial-info">
+            <h2>All Serial Numbers</h2>
+            <ul id="serialList">
+                <!-- List items will be generated here by JavaScript -->
+            </ul>
+            <div class="pagination" id="paginationControls">
+                <!-- Pagination buttons will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let serials = <%- JSON.stringify(serials) %>; // Original list of serials
+        let filteredSerials = [...serials]; // Initialize with the original list
+
+        function filterSerials() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            filteredSerials = serials.filter(serial => serial.serialNumber.toLowerCase().includes(searchInput));
+            currentPage = 1; // Reset to the first page
+            displayPage(currentPage);
+            setupPagination();
+        }
+
+        function displayPage(page) {
+            const serialList = document.getElementById('serialList');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            serialList.innerHTML = '';
+
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedSerials = filteredSerials.slice(start, end);
+
+            if (paginatedSerials.length === 0) {
+                noResultsMessage.style.display = 'block';
+            } else {
+                noResultsMessage.style.display = 'none';
+                paginatedSerials.forEach(serial => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <strong>Serial Number:</strong> ${serial.serialNumber}<br>
+                            <strong>Model Number:</strong> ${serial.modelNumber}<br>
+                            <strong>Tested By:</strong> ${serial.testedBy}<br>
+                            <strong>Uploaded File:</strong> <a href="/uploads/${serial.uploadedFile}" target="_blank">${serial.uploadedFile}</a><br>
+                            <h2 style="color: #e65c00;text-align: left;">Machine Specification :- </h2>
+                            <strong>Processor:</strong> ${serial.processor}<br>
+                            <strong>Motherboard:</strong> ${serial.motherboard}<br>
+                            <strong>RAM-1:</strong> ${serial.RAM1}<br>
+                            <strong>RAM-2:</strong> ${serial.RAM2}<br>
+                            <strong>RAM-3:</strong> ${serial.RAM3}<br>
+                            <strong>RAM-4:</strong> ${serial.RAM4}<br>
+                            <strong>SSD SATA:</strong> ${serial.SSD_SATA}<br>
+                            <strong>SSD NVMe:</strong> ${serial.SSD_NVMe}<br>
+                            <strong>HDD-1:</strong> ${serial.HDD1}<br>
+                            <strong>HDD-2:</strong> ${serial.HDD2}<br>
+                            <strong>Graphic Card:</strong> ${serial.GraphicCard}<br>
+                            <strong>Bluetooth Module:</strong> ${serial.BluetoothModule}<br>
+                            <strong>Monitor Size:</strong> ${serial.monitorSize}<br>
+                            <strong>Operating System:</strong> ${serial.operatingSystem}<br>
+                            <strong>Keyboard Mouse Combo:</strong> ${serial.keyboardMouseCombo}<br>
+                            <strong>Wifi Module:</strong> ${serial.WifiModule}<br>
+                            <strong>Software / APP:</strong> ${serial.SoftwareApp}<br>
+                            <strong>Add-On:</strong> ${serial.AddOn}<br>
+                        </div>
+                    `;
+                    if (serial.dynamicFields && typeof serial.dynamicFields === 'object' && Object.keys(serial.dynamicFields).length > 0) {
+        const dynamicFieldsDiv = document.createElement('div');
+        for (const [key, value] of Object.entries(serial.dynamicFields)) {
+            dynamicFieldsDiv.innerHTML += `<strong>${key}:</strong> ${value}<br>`;
+        }
+        li.appendChild(dynamicFieldsDiv);
+    } else {
+        li.innerHTML += '<p>No dynamic fields available.</p>';
+    }
+
+                    serialList.appendChild(li);
+                });
+            }
+        }
+
+        function setupPagination() {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(filteredSerials.length / itemsPerPage);
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                button.classList.add('pagination-btn');
+                if (i === currentPage) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayPage(currentPage);
+                    updatePaginationButtons();
+                });
+                paginationControls.appendChild(button);
+            }
+        }
+
+        function updatePaginationButtons() {
+            const buttons = document.querySelectorAll('.pagination button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+                if (parseInt(button.innerText) === currentPage) {
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            displayPage(currentPage);
+            setupPagination();
+        });
+    </script>
+</body>
+</html>

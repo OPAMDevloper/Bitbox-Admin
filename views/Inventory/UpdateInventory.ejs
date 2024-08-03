@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 80px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #ff6900;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff3e6;
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #ffcc99;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .serial-details {
+            flex: 1;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 10px;
+            border-left: 2px solid #ffcc99;
+            padding-left: 10px;
+        }
+
+        .actions button {
+            margin-bottom: 10px;
+        }
+
+        button, input[type="submit"] {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: #e05d00;
+        }
+
+        .delete-btn {
+            background-color: #ff0000;
+        }
+
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .update-btn {
+            background-color: #ffcc00;
+            color: #333;
+        }
+
+        .update-btn:hover {
+            background-color: #e6b800;
+        }
+
+        a {
+            display: inline-block;
+            text-align: center;
+            background-color: #ff6900;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #e05d00;
+        }
+
+        .search-bar {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .search-bar input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* CSS for the popup form */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+            max-height: 90%;
+            overflow-y: auto; /* Enable vertical scroll */
+        }
+
+        .popup input, .popup label, .popup select {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .popup button {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .popup button:hover {
+            background-color: #e05d00;
+        }
+
+        .popup .cancel-btn {
+            background-color: #ccc;
+        }
+
+        .popup .cancel-btn:hover {
+            background-color: #999;
+        }
+
+        #updatePopup::-webkit-scrollbar {
+            display: none;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination button:hover {
+            background-color: #e05d00;
+        }
+
+        .pagination .disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+       
+        <div class="title" style="font-size: 1.2em;color: black;font-weight: 600;margin-right: 100px;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 10px; background-color: #b0b3c6; border: none; align-items: end; justify-content: end; text-align: end; width: 0; margin-right: 100px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container" style="margin-top: 8%;">
+        <h2>Search Serial Numbers</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by Serial Number..." oninput="filterSerials()">
+        </div>
+
+        <div class="serial-info">
+            <h2>All Serial Numbers</h2>
+            <ul id="serialList">
+                <% serials.forEach(serial => { %>
+                    <li>
+                        <div class="serial-details">
+                            <strong>Serial Number:</strong> <%= serial.serialNumber %><br>
+                            <strong>Model Number:</strong> <%= serial.modelNumber %><br>
+                            <strong>Tested By:</strong> <%= serial.testedBy %><br>
+                            <strong>Uploaded File:</strong> <a href="/uploads/<%= serial.uploadedFile %>" target="_blank"><%= serial.uploadedFile %></a><br>
+                            <h2 style="color: #e65c00;text-align: left;">Machine Specification:</h2>
+                            <strong>Processor:</strong> <%= serial.processor %><br>
+                            <strong>Motherboard:</strong> <%= serial.motherboard %><br>
+                            <strong>RAM-1:</strong> <%= serial.RAM1 %><br>
+                            <strong>RAM-2:</strong> <%= serial.RAM2 %><br>
+                            <strong>RAM-3:</strong> <%= serial.RAM3 %><br>
+                            <strong>RAM-4:</strong> <%= serial.RAM4 %><br>
+                            <strong>HDD-1:</strong> <%= serial.HDD1 %><br>
+                            <strong>HDD-2:</strong> <%= serial.HDD2 %><br>
+                            <strong>SSD SATA:</strong> <%= serial.SSD_SATA %><br>
+                            <strong>SSD NVMe:</strong> <%= serial.SSD_NVMe %><br>
+                            <strong>Wifi Module:</strong> <%= serial.WifiModule %><br>
+                            <strong>Software / APP:</strong> <%= serial.SoftwareApp %><br>
+                            <strong>Add-On:</strong> <%= serial.AddOn %><br>
+                            <strong>Graphic Card:</strong> <%= serial.GraphicCard %><br>
+                            <strong>Bluetooth Module:</strong> <%= serial.BluetoothModule %><br>
+                            <strong>Monitor Size:</strong> <%= serial.monitorSize %><br>
+                            <strong>Operating System:</strong> <%= serial.operatingSystem %><br>
+                            <strong>Keyboard Mouse Combo:</strong> <%= serial.keyboardMouseCombo %><br>
+                            
+                            <!-- Dynamic Fields -->
+                            <% if (serial.dynamicFields && serial.dynamicFields.size > 0) { %>
+
+                                <% for (const [key, value] of serial.dynamicFields) { %>
+                                    <strong><%= key %>:</strong> <%= value %><br>
+                                <% } %>
+                            <% } %>
+                        </div>
+
+                        <div id="overlay" class="overlay" onclick="hideUpdatePopup()"></div>
+                        <div id="updatePopup" class="popup">
+                            <h2>Update Serial Number</h2>
+                            <form action="/api/inventoryManagement/Inventory-update" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" id="updateId" name="id">
+                        
+                                <!-- Existing fields from the add form -->
+                                <label for="updateSerialNumber">Serial Number:</label>
+                                <input type="text" id="updateSerialNumber" name="serialNumber" required>
+                                
+                                <label for="updateModelNumber">Model Number:</label>
+                                <input type="text" id="updateModelNumber" name="modelNumber" required>
+                                
+                                <label for="updateTestedBy">Tester:</label>
+                                <select id="updateTestedBy" name="testedBy" required>
+                                    <% testers.forEach(tester => { %>
+                                        <option value="<%= tester._id %>"><%= tester.name %></option>
+                                    <% }) %>
+                                </select>
+                                
+                                <label for="updateUploadedFile">Upload File:</label>
+                                <input type="file" id="updateUploadedFile" name="uploadedFile">
+                                
+                                <label for="updateProcessor">Processor:</label>
+                                <input type="text" id="updateProcessor" name="processor" required>
+                                
+                                <label for="updateMotherboard">Motherboard:</label>
+                                <input type="text" id="updateMotherboard" name="motherboard" required>
+                                
+                                <label for="updateRAM1">RAM-1:</label>
+                                <input type="text" id="updateRAM1" name="RAM1" required>
+                                
+                                <label for="updateRAM2">RAM-2:</label>
+                                <input type="text" id="updateRAM2" name="RAM2" required>
+                                
+                                <label for="updateRAM3">RAM-3:</label>
+                                <input type="text" id="updateRAM3" name="RAM3" required>
+                                
+                                <label for="updateRAM4">RAM-4:</label>
+                                <input type="text" id="updateRAM4" name="RAM4" required>
+                                
+                                <label for="updateHDD1">HDD-1:</label>
+                                <input type="text" id="updateHDD1" name="HDD1" required>
+                                
+                                <label for="updateHDD2">HDD-2:</label>
+                                <input type="text" id="updateHDD2" name="HDD2" required>
+                                
+                                <label for="updateSSD_SATA">SSD SATA:</label>
+                                <input type="text" id="updateSSD_SATA" name="SSD_SATA" required>
+                                
+                                <label for="updateSSD_NVMe">SSD NVMe:</label>
+                                <input type="text" id="updateSSD_NVMe" name="SSD_NVMe" required>
+                                
+                                <label for="updateWifiModule">Wifi Module:</label>
+                                <input type="text" id="updateWifiModule" name="WifiModule" required>
+                                
+                                <label for="updateSoftwareApp">Software / APP:</label>
+                                <input type="text" id="updateSoftwareApp" name="SoftwareApp" required>
+                                
+                                <label for="updateAddOn">Add-On:</label>
+                                <input type="text" id="updateAddOn" name="AddOn" required>
+                                
+                                <label for="updateGraphicCard">Graphic Card:</label>
+                                <input type="text" id="updateGraphicCard" name="GraphicCard" required>
+                                
+                                <label for="updateBluetoothModule">Bluetooth Module:</label>
+                                <input type="text" id="updateBluetoothModule" name="BluetoothModule" required>
+                                
+                                <label for="updateMonitorSize">Monitor Size:</label>
+                                <input type="text" id="updateMonitorSize" name="monitorSize" required>
+                                
+                                <label for="updateOperatingSystem">Operating System:</label>
+                                <input type="text" id="updateOperatingSystem" name="operatingSystem" required>
+                                
+                                <label for="updateKeyboardMouseCombo">Keyboard Mouse Combo:</label>
+                                <input type="text" id="updateKeyboardMouseCombo" name="keyboardMouseCombo" required>
+                        
+                                <!-- Dynamic Fields -->
+                                <div id="updateDynamicFields">
+                                    <!-- Dynamic fields will be populated here -->
+                                </div>
+                        
+                                <button type="submit">Update Serial</button>
+                                <button type="button" class="cancel-btn" onclick="hideUpdatePopup()">Cancel</button>
+                            </form>
+                        </div>
+                        
+
+    <div class="actions">
+        <button class="update-btn" onclick="showUpdatePopup(
+    '<%= serial._id %>',
+    '<%= serial.serialNumber %>',
+    '<%= serial.modelNumber %>',
+    '<%= serial.testedBy %>',
+    '<%= serial.processor %>',
+    '<%= serial.motherboard %>',
+    '<%= serial.RAM1 %>',
+    '<%= serial.RAM2 %>',
+    '<%= serial.RAM3 %>',
+    '<%= serial.RAM4 %>',
+    '<%= serial.HDD1 %>',
+    '<%= serial.HDD2 %>',
+    '<%= serial.SSD_SATA %>',
+    '<%= serial.SSD_NVMe %>',
+    '<%= serial.WifiModule %>',
+    '<%= serial.SoftwareApp %>',
+    '<%= serial.AddOn %>',
+    '<%= serial.GraphicCard %>',
+    '<%= serial.BluetoothModule %>',
+    '<%= serial.monitorSize %>',
+    '<%= serial.operatingSystem %>',
+    '<%= serial.keyboardMouseCombo %>',
+    <%= JSON.stringify(serial.dynamicFields) %>
+)">Update</button>
+
+        <!-- <form action="/api/inventoryManagement/Inventory-delete/<%= serial._id %>?_method=DELETE" method="POST">
+            <button class="delete-btn" type="submit" onclick="return confirm('Are you sure you want to delete this serial number?')">Delete</button>
+        </form> -->
+    </div>
+</li>
+<% }) %>
+            </ul>
+        </div>
+        <div class="pagination">
+            <button id="prevBtn" onclick="prevPage()">Previous</button>
+            <button id="nextBtn" onclick="nextPage()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage(currentPage);
+        });
+
+
+        function nextPage() {
+            const totalPages = Math.ceil(document.getElementById('serialList').children.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+
+        function filterSerials() {
+    const filter = document.getElementById('searchInput').value.toUpperCase();
+    const serialList = document.getElementById('serialList');
+    const serials = serialList.getElementsByTagName('li');
+    let visibleCount = 0;
+
+    Array.from(serials).forEach(serial => {
+        const serialDetails = serial.querySelector('.serial-details').textContent.toUpperCase();
+        if (serialDetails.includes(filter)) {
+            serial.style.display = '';
+            visibleCount++;
+        } else {
+            serial.style.display = 'none';
+        }
+    });
+
+    currentPage = 1;
+    updatePagination(visibleCount);
+}
+
+function updatePagination(visibleCount) {
+    const totalPages = Math.ceil(visibleCount / itemsPerPage);
+    document.getElementById('prevBtn').classList.toggle('disabled', currentPage === 1);
+    document.getElementById('nextBtn').classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+    showPage(currentPage);
+}
+
+function showPage(page) {
+    const serialList = document.getElementById('serialList');
+    const serials = Array.from(serialList.children).filter(serial => serial.style.display !== 'none');
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    serials.forEach((serial, index) => {
+        if (index >= startIndex && index < endIndex) {
+            serial.style.display = 'flex';
+        } else {
+            serial.style.display = 'none';
+        }
+    });
+}
+
+
+
+        
+    function showUpdatePopup(id, serialNumber, modelNumber, testedBy, processor, motherboard, RAM1, RAM2, RAM3, RAM4, HDD1, HDD2, SSD_SATA, SSD_NVMe, WifiModule, SoftwareApp, AddOn, GraphicCard, BluetoothModule, monitorSize, operatingSystem, keyboardMouseCombo, dynamicFields) {
+        const overlay = document.getElementById('overlay');
+        const updatePopup = document.getElementById('updatePopup');
+
+        document.getElementById('updateId').value = id;
+        document.getElementById('updateSerialNumber').value = serialNumber;
+        document.getElementById('updateModelNumber').value = modelNumber;
+        document.getElementById('updateTestedBy').value = testedBy; // You may need to select the correct option
+        document.getElementById('updateProcessor').value = processor;
+        document.getElementById('updateMotherboard').value = motherboard;
+        document.getElementById('updateRAM1').value = RAM1;
+        document.getElementById('updateRAM2').value = RAM2;
+        document.getElementById('updateRAM3').value = RAM3;
+        document.getElementById('updateRAM4').value = RAM4;
+        document.getElementById('updateHDD1').value = HDD1;
+        document.getElementById('updateHDD2').value = HDD2;
+        document.getElementById('updateSSD_SATA').value = SSD_SATA;
+        document.getElementById('updateSSD_NVMe').value = SSD_NVMe;
+        document.getElementById('updateWifiModule').value = WifiModule;
+        document.getElementById('updateSoftwareApp').value = SoftwareApp;
+        document.getElementById('updateAddOn').value = AddOn;
+        document.getElementById('updateGraphicCard').value = GraphicCard;
+        document.getElementById('updateBluetoothModule').value = BluetoothModule;
+        document.getElementById('updateMonitorSize').value = monitorSize;
+        document.getElementById('updateOperatingSystem').value = operatingSystem;
+        document.getElementById('updateKeyboardMouseCombo').value = keyboardMouseCombo;
+
+        // Handle dynamic fields if necessary
+        const dynamicFieldsContainer = document.getElementById('updateDynamicFields');
+        dynamicFieldsContainer.innerHTML = ''; // Clear existing dynamic fields
+        if (dynamicFields) {
+            for (const [key, value] of Object.entries(dynamicFields)) {
+                dynamicFieldsContainer.innerHTML += `
+                    <label for="updateDynamicField_${key}">${key}:</label>
+                    <input type="text" id="updateDynamicField_${key}" name="${key}" value="${value}">
+                `;
+            }
+        }
+
+        overlay.style.display = 'block';
+        updatePopup.style.display = 'block';
+    }
+
+    function hideUpdatePopup() {
+        const overlay = document.getElementById('overlay');
+        const updatePopup = document.getElementById('updatePopup');
+
+        overlay.style.display = 'none';
+        updatePopup.style.display = 'none';
+    }
+
+    </script>
+</body>
+</html>

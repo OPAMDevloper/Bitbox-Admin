@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closed Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.open {
+            color: green;
+        }
+        .status.in-progress {
+            color: orange;
+        }
+        .status.resolved {
+            color: red;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1em;
+            background-color: #b0b3c6;
+            color: white;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        nav .logo img {
+            max-width: 100px;
+            height: auto;
+        }
+        nav .title {
+            font-size: 1.2em;
+            margin-right: 25px;
+            color: black;
+            font-weight: 600;
+        }
+        nav form button {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .pagination button:hover {
+            background-color: #0056b3;
+        }
+        .pagination button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px; color: black; font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+    <div class="container">
+        <h1>Closed Tickets</h1>
+        <table id="tickets-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination">
+            <button id="prev-page" disabled>Previous</button>
+            <span id="page-info"></span>
+            <button id="next-page">Next</button>
+        </div>
+    </div>
+    <script>
+        const tickets = <%- JSON.stringify(tickets) %>; // This will hold all the tickets passed from the backend
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            updatePagination();
+        });
+
+        function renderTable() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const tableBody = document.querySelector('#tickets-table tbody');
+            tableBody.innerHTML = '';
+            
+            tickets.slice(startIndex, endIndex).forEach(ticket => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${ticket._id}</td>
+                    <td>${ticket.emailId}</td>
+                    <td>${ticket.message}</td>
+                    <td class="status ${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(tickets.length / itemsPerPage);
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+        }
+
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', () => {
+            const totalPages = Math.ceil(tickets.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        });
+    </script>
+</body>
+</html>

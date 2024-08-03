@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Reseller</title>
+    <link rel="stylesheet" href="/css/resellers-page.css">
+    <style>
+        #resellerDetailsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+            width: 80%;
+            max-height: 80%;
+            overflow-y: auto; /* Add scrollbar if content overflows */
+        }
+    
+        #modalBackdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+    
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="Logo" style="max-width: 100px; height: auto;">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-left: 630px;color: black;font-weight: 600;width: 900px;">
+            Reseller Form
+        </div>
+        
+        
+    </nav>
+    <div class="warranty-info" style="margin-top: 10%;">
+        <h2>Add New Reseller</h2>
+        <form id="addResellerForm">
+            <!-- <label for="resellerName">Reseller Name:</label>
+            <input type="text" id="resellerName" name="name" required><br><br> -->
+
+            <label for="companyName">Company Name:</label>
+            <input type="text" id="companyName" name="companyName" required><br><br>
+
+            <label for="businessAddress">Business Address:</label>
+            <input type="text" id="businessAddress" name="businessAddress" required><br><br>
+
+            <label for="resellerCity">City:</label>
+            <input type="text" id="resellerCity" name="city" required><br><br>
+
+            <label for="resellerState">State:</label>
+            <input type="text" id="resellerState" name="state" required>
+                
+            <br><br>
+
+            <label for="contactPersonName">Contact Person Name:</label>
+            <input type="text" id="contactPersonName" name="contactPersonName" required><br><br>
+
+            <label for="contactPersonDesignation">Contact Person Designation:</label>
+            <input type="text" id="contactPersonDesignation" name="contactPersonDesignation" required><br><br>
+
+            <label for="contactPersonEmail">Contact Person Email ID:</label>
+            <input type="email" id="contactPersonEmail" name="contactPersonEmail" required><br><br>
+
+            <label for="contactPersonPhone">Contact Person Phone Number:</label>
+            <input type="text" id="contactPersonPhone" name="contactPersonPhone" value="+91" required><br><br>
+
+            <label for="businessProfile">Business Profile:</label> <br>
+            <textarea id="businessProfile" name="businessProfile" required></textarea><br><br>
+
+            <label for="typeOfBusiness">Type of Business:</label>
+            <input type="text" id="typeOfBusiness" name="typeOfBusiness" required><br><br>
+
+            <label for="yearOfEstablishment">Year of Establishment:</label>
+            <input type="text" id="yearOfEstablishment" name="yearOfEstablishment" required><br><br>
+
+            <label for="updateGstNumber" style="color: black; font-weight: bold;">GST Number:</label>
+<input type="text" id="updateGstNumber" name="gstNumber" maxlength="15"
+       pattern="[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}"
+       title="Invalid GST number. It should be in the format 12ABCDE1234F1Z1."
+       oninput="this.value = this.value.toUpperCase();"
+       onblur="this.value = this.value.toUpperCase(); if(!this.checkValidity()) alert(this.title);"
+       style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;" 
+       required><br>
+
+            <label for="uploadGstCertificate">Upload GST Certificate:</label>
+            <input type="file" id="uploadGstCertificate" name="gstCertificate" required><br><br>
+
+            <label for="updatePanNumber" style="color: black; font-weight: bold;">PAN Number:</label>
+<input type="text" id="updatePanNumber" name="panNumber" maxlength="10" 
+       pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" 
+       title="Invalid PAN number. It should be in the format ABCDE1234F."
+       oninput="this.value = this.value.toUpperCase();"
+       onblur="this.value = this.value.toUpperCase(); if(!this.checkValidity()) alert(this.title);"
+       style="width: calc(100% - 22px); padding: 10px; margin: 5px 0 15px 0; display: inline-block; border: 1px solid black; border-radius: 5px; box-sizing: border-box;" 
+       required><br>
+
+            <label for="uploadPanCard">Upload Company PAN Card:</label>
+            <input type="file" id="uploadPanCard" name="panCard" required><br><br>
+
+            <label for="uploadMsmeCertificate">Upload MSME Certificate:</label>
+            <input type="file" id="uploadMsmeCertificate" name="msmeCertificate"><br><br>
+
+            <label for="certificationsAffiliations">Any Certifications or Affiliations:</label>
+            <input type="text" id="certificationsAffiliations" name="certificationsAffiliations"><br><br>
+
+            <label for="briefDescription">Brief Description of Business:</label> <br>
+            <textarea id="briefDescription" name="briefDescription" required></textarea><br><br>
+
+            <label for="typeOfIndustry">Type of Industry:</label>
+            <input type="text" id="typeOfIndustry" name="typeOfIndustry" required><br><br>
+
+            <label for="prominentClients">Name Few Prominent Existing Clients:</label>
+            <input type="text" id="prominentClients" name="prominentClients" required><br><br>
+
+            <label for="experienceExpertise">Number of Years in the Industry:</label>
+            <input type="text" id="experienceExpertise" name="experienceExpertise" required><br><br>
+
+            <label for="brandsDealtWith">Types and Brands Deal With:</label>
+            <input type="text" id="brandsDealtWith" name="brandsDealtWith" required><br><br>
+
+            <label for="branchLocations">Branch Offices Location:</label>
+            <input type="text" id="branchLocations" name="branchLocations"><br><br>
+
+            <label for="warehouseFacilities">Warehouse/Storage Facilities:</label>
+            <input type="text" id="warehouseFacilities" name="warehouseFacilities"><br><br>
+
+            <label for="technicalSupportStaff">Technical Support Staff Availability:</label>
+            <input type="text" id="technicalSupportStaff" name="technicalSupportStaff"><br><br>
+
+            <label for="annualTurnover">Annual Turnover:</label>
+            <input type="text" id="annualTurnover" name="annualTurnover" required><br><br>
+
+            <label for="uploadPlStatement">Upload P&L Statement from Balance Sheet / CA Certificate:</label>
+            <input type="file" id="uploadPlStatement" name="plStatement" required><br><br>
+
+            <label for="lastYearBusinessValue">Value of Last Years Business on GeM:</label>
+            <input type="text" id="lastYearBusinessValue" name="lastYearBusinessValue"><br><br>
+
+            <label for="bankDetails">Bank Details - Account Number with IFSC Code:</label>
+            <input type="text" id="bankDetails" name="bankDetails" required><br><br>
+
+            <label for="gemSellerId">Current GeM Seller ID:</label>
+            <input type="text" id="gemSellerId" name="gemSellerId"><br><br>
+
+            <label for="gemSellerIdScreenshot">GeM Seller ID Screenshot:</label>
+            <input type="file" id="gemSellerIdScreenshot" name="gemSellerIdScreenshot"><br><br>
+
+            <label for="gemSellerRating">Current GeM Seller Rating:</label>
+            <input type="text" id="gemSellerRating" name="gemSellerRating"><br><br>
+
+            <!-- <label for="authorizationRegions">Select the Regions for which Authorisation is Requested For:</label>
+            <select id="authorizationRegions" name="authorizationRegions" multiple required>
+                <option value="West India">West India</option>
+                <option value="South India">South India</option>
+                <option value="North India">North India</option>
+                <option value="East India">East India</option>
+                <option value="North East India">North East India</option>
+                <option value="Andaman & Nicobar Islands">Andaman & Nicobar Islands</option>
+                <option value="PAN India">PAN India</option>
+            </select><br><br> -->
+
+            <label for="additionalInfo">Additional Information:</label> <br>
+            <textarea id="additionalInfo" name="additionalInfo"></textarea><br><br>
+
+            <label for="bitboxAccountManager">BitBox Account Manager (If Any):</label>
+            <input type="text" id="bitboxAccountManager" name="bitboxAccountManager"><br><br>
+
+            <label for="declarationForm">Company Declaration Form:</label>
+            <input type="file" id="declarationForm" name="declarationForm" required><br><br>
+
+            <button type="submit">Add Reseller</button>
+        </form>
+        
+        
+    </div>
+
+    <!-- Modal for displaying reseller details -->
+        <div id="resellerDetailsModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; z-index: 1000;">
+            <h2>Reseller Details</h2>
+            <div id="resellerDetailsContent"></div>
+            <button onclick="closeModal()">Close</button>
+        </div>
+        <div id="modalBackdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
+
+
+    <script>
+        document.getElementById('addResellerForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
+    fetch('/api/resellerManagement/add-reseller', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log('Server response:', data);
+        // Uncomment these lines when you're ready to reset the form and reload the page
+        alert(data);
+        window.location.reload();
+        form.reset();
+    })
+    .catch(error => console.error('Error adding reseller:', error));
+});
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.details-button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reseller = JSON.parse(this.getAttribute('data-reseller'));
+            const detailsContent = `
+                <p><strong>Reseller Name:</strong> ${reseller.name || 'N/A'}</p>
+                <p><strong>Company Name:</strong> ${reseller.companyName || 'N/A'}</p>
+                <p><strong>Business Address:</strong> ${reseller.businessAddress || 'N/A'}</p>
+                <p><strong>City:</strong> ${reseller.city || 'N/A'}</p>
+                <p><strong>State:</strong> ${reseller.state || 'N/A'}</p>
+                <p><strong>Contact Person Name:</strong> ${reseller.contactPersonName || 'N/A'}</p>
+                <p><strong>Contact Person Designation:</strong> ${reseller.contactPersonDesignation || 'N/A'}</p>
+                <p><strong>Contact Person Email ID:</strong> ${reseller.contactPersonEmail || 'N/A'}</p>
+                <p><strong>Contact Person Phone Number:</strong> ${reseller.contactPersonPhone || 'N/A'}</p>
+                <p><strong>Business Profile:</strong> ${reseller.businessProfile || 'N/A'}</p>
+                <p><strong>Type of Business:</strong> ${reseller.typeOfBusiness || 'N/A'}</p>
+                <p><strong>Year of Establishment:</strong> ${reseller.yearOfEstablishment || 'N/A'}</p>
+                <p><strong>GST Number:</strong> ${reseller.gstNumber || 'N/A'}</p>
+                <p><strong>PAN Number:</strong> ${reseller.panNumber || 'N/A'}</p>
+                <p><strong>Certifications or Affiliations:</strong> ${reseller.certificationsAffiliations || 'N/A'}</p>
+                <p><strong>Brief Description of Business:</strong> ${reseller.briefDescription || 'N/A'}</p>
+                <p><strong>Type of Industry:</strong> ${reseller.typeOfIndustry || 'N/A'}</p>
+                <p><strong>Prominent Clients:</strong> ${reseller.prominentClients || 'N/A'}</p>
+                <p><strong>Experience/Expertise:</strong> ${reseller.experienceExpertise || 'N/A'}</p>
+                <p><strong>Brands Dealt With:</strong> ${reseller.brandsDealtWith || 'N/A'}</p>
+                <p><strong>Branch Locations:</strong> ${reseller.branchLocations || 'N/A'}</p>
+                <p><strong>Warehouse/Storage Facilities:</strong> ${reseller.warehouseFacilities || 'N/A'}</p>
+                <p><strong>Technical Support Staff:</strong> ${reseller.technicalSupportStaff || 'N/A'}</p>
+                <p><strong>Annual Turnover:</strong> ${reseller.annualTurnover || 'N/A'}</p>
+                <p><strong>Value of Last Year's Business on GeM:</strong> ${reseller.lastYearBusinessValue || 'N/A'}</p>
+                <p><strong>Bank Details:</strong> ${reseller.bankDetails || 'N/A'}</p>
+                <p><strong>Current GeM Seller ID:</strong> ${reseller.gemSellerId || 'N/A'}</p>
+                <p><strong>Current GeM Seller Rating:</strong> ${reseller.gemSellerRating || 'N/A'}</p>
+                <p><strong>Authorization Regions:</strong> ${Array.isArray(reseller.authorizationRegions) ? reseller.authorizationRegions.join(', ') : 'N/A'}</p>
+                <p><strong>Additional Information:</strong> ${reseller.additionalInfo || 'N/A'}</p>
+                <p><strong>BitBox Account Manager:</strong> ${reseller.bitboxAccountManager || 'N/A'}</p>
+                <p><strong>GST Certificate:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.gstCertificate}">${reseller.gstCertificate || 'N/A'}</a>
+                <p><strong>PAN Card:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.panCard}">${reseller.panCard || 'N/A'}</a>
+                <p><strong>MSME Certificate:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.msmeCertificate}">${reseller.msmeCertificate || 'N/A'}</a>
+                <p><strong>PL Statement:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.plStatement}">${reseller.plStatement || 'N/A'}</a>
+                <p><strong>GemSellerID:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.gemSellerIdScreenshot}">${reseller.gemSellerIdScreenshot || 'N/A'}</a>
+                <p><strong>Declaration Form:</strong></p> <a href="https://bitbox-admin.onrender.com/${reseller.declarationForm}">${reseller.declarationForm || 'N/A'}</a>
+            `;
+            document.getElementById('resellerDetailsContent').innerHTML = detailsContent;
+            openModal();
+        });
+    });
+});
+
+    function openModal() {
+        document.getElementById('resellerDetailsModal').style.display = 'block';
+        document.getElementById('modalBackdrop').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('resellerDetailsModal').style.display = 'none';
+        document.getElementById('modalBackdrop').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testers Management</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f7f7f7;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f57c00; /* Orange shade */
+            color: white;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 10px;
+        }
+
+        .logo img {
+            max-width: 100px;
+            height: auto;
+        }
+
+        .title {
+            font-size: 1.2em;
+            margin-right: 25px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .container {
+            margin-top: 80px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        /* Form Styles */
+        form {
+            background-color: #fff3e6;
+            padding: 20px;
+            border-radius: 5px;
+      
+            margin-bottom: 30px;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f57c00; /* Orange shade */
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Action Buttons in Table */
+        .action-buttons form {
+            display: inline;
+            margin: 0;
+        }
+
+        .action-buttons input[type="text"] {
+            width: 150px;
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .update-button, .delete-button {
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 5px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .update-button {
+            background-color: #ff9800; /* Lighter orange */
+            color: white;
+        }
+
+        .update-button:hover {
+            background-color: #fb8c00; /* Darker orange */
+        }
+
+        .delete-button {
+            background-color: #ff5722; /* Red-Orange */
+            color: white;
+        }
+
+        .delete-button:hover {
+            background-color: #e64a19; /* Darker red-orange */
+        }
+    </style>
+</head>
+<body>
+    <nav style="background-color: #b0b3c6;">
+        <div class="logo">
+            <img src="/images/BitBox_logo1.png" alt="BitBox Logo">
+        </div>
+        <div class="title" style="font-size: 1.2em; color: white; font-weight: 600; margin-right: 100px;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" style="background-color: #b0b3c6;" method="POST" style="margin-right: 10px; border-color: #b0b3c6 background-color: #f57c00; border: none;">
+            <button type="submit" style="background-color: #ff0000; color: white; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container" style="font-family: Arial, sans-serif; width: 80%; margin: 20px auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-top: 10%;">
+        <h2 style="text-align: center; color: black; margin-bottom: 20px;">Add New Tester</h2>
+        <form action="/api/inventoryManagement/testers/add" method="POST" style="display: flex; justify-content: center; margin-bottom: 30px;">
+            <input type="text" name="name" placeholder="Enter Tester Name" required style="width: 60%; padding: 10px; margin-right: 10px; border: 1px solid black; border-radius: 5px; font-size: 1em;">
+            <button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Add Tester</button>
+        </form>
+    
+        <h2 style="text-align: center; color: black; margin-bottom: 20px;">Testers List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="padding: 12px; text-align: left;">Name</th>
+                    <th style="padding: 12px; text-align: left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% testers.forEach(tester => { %>
+                    <tr>
+                        <td style="padding: 12px;"><%= tester.name %></td>
+                        <td class="action-buttons" style="padding: 12px;">
+                            <form action="/api/inventoryManagement/testers/update/<%= tester._id %>" method="POST" style="display: inline-block; margin-right: 10px;">
+                                <input type="text" name="name" value="<%= tester.name %>" required style="padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                <button type="submit" class="update-button">Update</button>
+                            </form>
+                            <form action="/api/inventoryManagement/testers/delete/<%= tester._id %>" method="POST" style="display: inline-block;">
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

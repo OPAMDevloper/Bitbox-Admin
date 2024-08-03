@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Warranty</title>
+    <link rel="stylesheet" href="/css/Register-Warranty.css">
+</head>
+<body>
+
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <div class="warranty-info" style="margin-top: 10%;">
+        <h2>Warranty Registration</h2>
+        <form action="/api/warrantyManagement/Register-Warranty" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+            <label for="numComputers">Number of Computers:</label>
+            <input type="number" id="numComputers" name="numComputers" min="1" required onchange="addComputerFields()"><br><br>
+
+            <label for="expiryyear">Expiry (In Years):</label>
+            <input type="text" id="expiryyear" name="expiryyear" required><br><br>
+
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+
+            <label for="email">Email:</label>
+            <br><br>
+            <small style="color:black;">Note: For Corporate or Federal institutions, submit only registered organization’s email domain.</small>
+            <input type="email" id="email" name="email" required><br><br>
+
+            <label for="purchaseDate">Purchase Date:</label>
+            <input type="date" id="purchaseDate" name="purchaseDate" required><br><br>
+
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" required><br><br>
+
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" required><br><br>
+
+            <label for="pincode">Pincode:</label>
+            <input type="text" id="pincode" name="pincode" required><br><br>
+
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" required><br><br>
+
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="text" id="phoneNumber" name="phoneNumber"value="+91" required><br><br>
+
+            <label for="billPdf">Upload Bill PDF:</label>
+            <input type="file" id="billPdf" name="billPdf" accept="application/pdf" required><br><br>
+
+            <label>Purchased Medium:</label>
+            <input type="radio" id="direct" name="purchaseMedium" value="direct" onclick="togglePurchaseMedium()"> Direct
+            <input type="radio" id="reseller" name="purchaseMedium" value="reseller" onclick="togglePurchaseMedium()"> Through Reseller<br><br>
+
+            <div id="purchaseDetails"></div>
+
+            <label for="warrantyType">Warranty Type:</label>
+            <input type="radio" id="on-site" name="warrantyType" value="on-site" onclick="toggleWarrantyOptions()"> On-Site
+            <input type="radio" id="off-site" name="warrantyType" value="off-site" onclick="toggleWarrantyOptions()"> Off-Site
+            <div id="warrantyOptions" style="display: none;">
+                <select id="warrantyOptionSelect" name="warrantyOption" required>
+                    <option value="" disabled selected>Select Warranty Option</option>
+                </select>
+            </div>
+            <input type="hidden" id="selectedWarrantyOption" name="selectedWarrantyOption" value="">
+
+
+            <div id="computerFields"></div>
+
+            <button type="submit" class="verify-btn" style="background-color: orange;color:black">Register</button>
+        </form>
+    </div>
+
+     <!-- This div will hold dynamically added computer fields -->
+     <script>
+        const serialVerificationStatus = {}; // Track verification status
+    
+        function addComputerFields() {
+            const numComputers = document.getElementById('numComputers').value;
+            const computerFieldsDiv = document.getElementById('computerFields');
+            computerFieldsDiv.innerHTML = '';
+    
+            for (let i = 1; i <= numComputers; i++) {
+                const computerDiv = document.createElement('div');
+                computerDiv.classList.add('computer');
+    
+                const heading = document.createElement('h3');
+                heading.textContent = `Computer ${i}`;
+    
+                const serialNumberLabel = document.createElement('label');
+                serialNumberLabel.textContent = 'Serial Number:';
+                const serialNumberInput = document.createElement('input');
+                serialNumberInput.type = 'text';
+                serialNumberInput.name = `serialNumber${i}`;
+                serialNumberInput.id = `serialNumber${i}`;
+                serialNumberInput.required = true;
+    
+                const checkSerialButton = document.createElement('button');
+                checkSerialButton.type = 'button';
+                checkSerialButton.textContent = 'Check Serial Number';
+                checkSerialButton.id = `checkSerialButton${i}`;
+                checkSerialButton.addEventListener('click', function() {
+                const serialNumber = serialNumberInput.value;
+                checkSerialNumber(serialNumber, `serialCheckResult${i}`, i);
+            });
+    
+                const serialCheckResult = document.createElement('p');
+                serialCheckResult.id = `serialCheckResult${i}`;
+    
+                const modelLabel = document.createElement('label');
+                modelLabel.textContent = 'Model:';
+                const modelInput = document.createElement('input');
+                modelInput.type = 'text';
+                modelInput.name = `model${i}`;
+                modelInput.required = true;
+    
+                computerDiv.appendChild(heading);
+                computerDiv.appendChild(serialNumberLabel);
+                computerDiv.appendChild(serialNumberInput);
+                computerDiv.appendChild(checkSerialButton);
+                computerDiv.appendChild(serialCheckResult);
+                computerDiv.appendChild(document.createElement('br'));
+                computerDiv.appendChild(modelLabel);
+                computerDiv.appendChild(modelInput);
+                computerDiv.appendChild(document.createElement('br'));
+    
+                computerFieldsDiv.appendChild(computerDiv);
+            }
+        }
+    
+        function checkIfAllSerialsVerified() {
+            const numComputers = document.getElementById('numComputers').value;
+            let allVerified = true;
+
+            for (let i = 1; i <= numComputers; i++) {
+                if (serialVerificationStatus[i] !== true) {
+                    allVerified = false;
+                    break;
+                }
+            }
+
+            document.querySelector('button[type="submit"]').disabled = !allVerified;
+        }
+    
+        function togglePurchaseMedium() {
+            const purchaseMedium = document.querySelector('input[name="purchaseMedium"]:checked').value;
+            const purchaseDetailsDiv = document.getElementById('purchaseDetails');
+            purchaseDetailsDiv.innerHTML = '';
+    
+            if (purchaseMedium === 'direct') {
+                const companyLabel = document.createElement('label');
+                companyLabel.textContent = 'Company:';
+                const companyInput = document.createElement('input');
+                companyInput.type = 'text';
+                companyInput.name = 'company';
+                companyInput.value = 'PATA ELECTRIC COMPANY';
+                companyInput.readOnly = true;
+    
+                purchaseDetailsDiv.appendChild(companyLabel);
+                purchaseDetailsDiv.appendChild(companyInput);
+            } else if (purchaseMedium === 'reseller') {
+                const resellerLabel = document.createElement('label');
+                resellerLabel.textContent = 'Select Reseller:';
+                const resellerSelect = document.createElement('select');
+                resellerSelect.name = 'reseller';
+    
+                // Fetch reseller options from the server
+                fetch('/api/warrantyManagement/resellers')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear any existing options
+                        resellerSelect.innerHTML = '';
+    
+                        // Ensure data is an array
+                        if (Array.isArray(data)) {
+                            data.forEach(reseller => {
+                                const option = document.createElement('option');
+                                option.value = reseller.companyName;  // Adjust according to your actual data fields
+                                option.textContent = reseller.companyName;  // Adjust according to your actual data fields
+                                resellerSelect.appendChild(option);
+                            });
+                        } else {
+                            console.error('Unexpected response format:', data);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching resellers:', error));
+    
+                purchaseDetailsDiv.appendChild(resellerLabel);
+                purchaseDetailsDiv.appendChild(resellerSelect);
+            }
+        }
+    
+        function toggleWarrantyOptions() {
+    const warrantyType = document.querySelector('input[name="warrantyType"]:checked').value;
+    const warrantyOptionSelect = document.getElementById('warrantyOptionSelect');
+    const selectedWarrantyOption = document.getElementById('selectedWarrantyOption');
+
+    warrantyOptionSelect.innerHTML = '';
+
+    fetch('/api/warrantyManagement/warranty-options')
+        .then(response => response.json())
+        .then(options => {
+            options.filter(option => option.type === warrantyType).forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                warrantyOptionSelect.appendChild(optionElement);
+            });
+        })
+        .catch(error => console.error('Error fetching warranty options:', error));
+
+    document.getElementById('warrantyOptions').style.display = 'block';
+    selectedWarrantyOption.value = ''; // Reset the selected option value
+}
+
+// Update this function to ensure `selectedWarrantyOption` is set correctly
+document.getElementById('warrantyOptionSelect').addEventListener('change', function() {
+    const selectedOption = document.getElementById('warrantyOptionSelect').value;
+    document.getElementById('selectedWarrantyOption').value = selectedOption;
+});
+
+        function validateForm() {
+            const numComputers = document.getElementById('numComputers').value;
+            for (let i = 1; i <= numComputers; i++) {
+                const modelInput = document.getElementById(`model${i}`);
+                if (modelInput.value.trim() === '') {
+                    alert(`Model number for computer ${i} is required.`);
+                    modelInput.focus();
+                    return false;
+                }
+                
+                if (serialVerificationStatus[i] !== true) {
+                    alert(`Serial number for computer ${i} must be verified before submitting.`);
+                    return false;
+                }
+            }
+
+            // Additional form validation can be added here
+
+            return true;
+        }
+
+        document.getElementById('warrantyForm').addEventListener('submit', function(event) {
+            if (!validateForm()) {
+                event.preventDefault(); // Prevent form submission if validation fails
+            }
+        });
+    
+        function checkSerialNumber(serialNumber, resultElementId, computerIndex) {
+            fetch('/api/warrantyManagement/serial-numbers/' + serialNumber)
+                .then(response => response.json())
+                .then(data => {
+                    const resultElement = document.getElementById(resultElementId);
+                    if (data.valid) {
+                        resultElement.textContent = 'Serial number is valid.';
+                        resultElement.className = 'success-message';
+                        serialVerificationStatus[computerIndex] = true;
+                    } else {
+                        resultElement.textContent = 'Serial number is invalid.';
+                        resultElement.className = 'error-message';
+                        serialVerificationStatus[computerIndex] = false;
+                    }
+                    checkIfAllSerialsVerified();
+                })
+                .catch(error => {
+                    console.error('Error checking serial number:', error);
+                    serialVerificationStatus[computerIndex] = false;
+                    checkIfAllSerialsVerified();
+                });
+        }
+    </script>
+    
+    
+</body>
+</html>

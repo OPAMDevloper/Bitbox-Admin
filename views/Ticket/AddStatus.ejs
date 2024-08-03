@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Ticket Admin Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-group button {
+            padding: 10px 20px;
+            border: none;
+            background-color: orange;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-group button:hover {
+            background-color: #ff8800;
+        }
+
+        .status-list {
+            margin-top: 20px;
+        }
+
+        .status-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-buttons button {
+            padding: 5px 10px;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .status-buttons .update-button {
+            background-color: #28a745;
+        }
+
+        .status-buttons .delete-button {
+            background-color: #dc3545;
+        }
+
+        .status-buttons .update-button:hover {
+            background-color: #218838;
+        }
+
+        .status-buttons .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container">
+        <h2>Add Status Option</h2>
+        <form id="status-form">
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <input type="text" id="status" name="status" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Add Status</button>
+            </div>
+        </form>
+
+        <div class="status-list" id="status-list">
+            <!-- Status options will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatusOptions();
+        });
+
+        document.getElementById('status-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const status = document.getElementById('status').value;
+
+            fetch('/api/ticketManagement/addStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Status added successfully');
+                document.getElementById('status').value = ''; // Clear input field
+                loadStatusOptions(); // Reload the list of statuses
+            })
+            .catch(error => {
+                console.error('Error adding status:', error);
+                alert('Error adding status');
+            });
+        });
+
+        function loadStatusOptions() {
+            fetch('/api/ticketManagement/statusOptions')
+                .then(response => response.json())
+                .then(data => {
+                    displayStatusOptions(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching status options:', error);
+                });
+        }
+
+        function displayStatusOptions(statuses) {
+            const statusList = document.getElementById('status-list');
+            statusList.innerHTML = ''; // Clear existing list
+
+            statuses.forEach(status => {
+                const statusItem = document.createElement('div');
+                statusItem.className = 'status-item';
+                
+                const statusText = document.createElement('span');
+                statusText.textContent = status.status;
+                
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'status-buttons';
+
+                const updateButton = document.createElement('button');
+                updateButton.className = 'update-button';
+                updateButton.textContent = 'Update';
+                updateButton.onclick = () => updateStatus(status._id);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteStatus(status._id);
+
+                buttonsContainer.appendChild(updateButton);
+                buttonsContainer.appendChild(deleteButton);
+                
+                statusItem.appendChild(statusText);
+                statusItem.appendChild(buttonsContainer);
+                statusList.appendChild(statusItem);
+            });
+        }
+
+        function updateStatus(id) {
+            const newStatus = prompt('Enter new status:');
+            if (newStatus) {
+                fetch(`/api/ticketManagement/updateStatus/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Status updated successfully');
+                    loadStatusOptions(); // Reload the list of statuses
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                    alert('Error updating status');
+                });
+            }
+        }
+
+        function deleteStatus(id) {
+            if (confirm('Are you sure you want to delete this status?')) {
+                fetch(`/api/ticketManagement/deleteStatus/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Status deleted successfully');
+                    loadStatusOptions(); // Reload the list of statuses
+                })
+                .catch(error => {
+                    console.error('Error deleting status:', error);
+                    alert('Error deleting status');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

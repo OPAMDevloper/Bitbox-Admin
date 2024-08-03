@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+        }
+        
+        .template-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            width: 600px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .form-group button {
+            padding: 10px 20px;
+            border: none;
+            background-color: orange;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .form-group button:hover {
+            background-color: #ff8800;
+        }
+        
+        .update-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .update-form-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Driver Management
+        </div>
+        <% if (loggedIN) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+
+    <div class="container" >
+        <h2>Email Template Management</h2>
+        <div id="template-list" style="margin-top: 170%;">
+            <!-- Template list will be populated here -->
+        </div>
+        
+        <div id="update-form-overlay" class="update-form-overlay"></div>
+        
+        <div id="update-form" class="update-form">
+            <h3>Update Template</h3>
+            <form id="form-update">
+                <input type="hidden" id="template-id">
+                <div class="form-group">
+                    <label for="update-name" >Name:</label>
+                    <input type="text" id="update-name" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="update-subject">Subject:</label>
+                    <input type="text" id="update-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="update-content">HTML Content:</label>
+                    <textarea id="update-content" rows="10" required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Update Template</button>
+                    <button type="button" onclick="closeUpdateForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTemplates();
+        });
+        
+        function loadTemplates() {
+            fetch('/api/emailManagement/emailTemplates')
+                .then(response => response.json())
+                .then(data => {
+                    const templateList = document.getElementById('template-list');
+                    templateList.innerHTML = '';
+                    data.forEach(template => {
+                        const templateItem = document.createElement('div');
+                        templateItem.className = 'template-item';
+                        templateItem.innerHTML = `
+                            <div>
+                                <p><strong>Name:</strong> ${escapeHTML(template.name)}</p>
+                                <p><strong>Subject:</strong> ${escapeHTML(template.subject)}</p>
+                                <p><strong>HTML Content:</strong> <pre>${escapeHTML(template.htmlContent)}</pre></p>
+                            </div>
+                            <button onclick="editTemplate('${template._id}')">Update</button>
+                        `;
+                        templateList.appendChild(templateItem);
+                    });
+                });
+        }
+        
+        function editTemplate(id) {
+            fetch(`/api/emailManagement/emailTemplates/${id}`)
+                .then(response => response.json())
+                .then(template => {
+                    document.getElementById('template-id').value = template._id;
+                    document.getElementById('update-name').value = template.name;
+                    document.getElementById('update-subject').value = template.subject;
+                    document.getElementById('update-content').value = template.htmlContent;
+                    document.getElementById('update-form').style.display = 'block';
+                    document.getElementById('update-form-overlay').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching template:', error);
+                    alert('Error fetching template');
+                });
+        }
+
+        function closeUpdateForm() {
+            document.getElementById('update-form').style.display = 'none';
+            document.getElementById('update-form-overlay').style.display = 'none';
+        }
+        
+        document.getElementById('form-update').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('template-id').value;
+            const name = document.getElementById('update-name').value;
+            const subject = document.getElementById('update-subject').value;
+            const content = document.getElementById('update-content').value;
+            
+            fetch(`/api/emailManagement/emailTemplates/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, subject, htmlContent: content }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Template updated successfully');
+                loadTemplates();
+                closeUpdateForm();
+            })
+            .catch(error => {
+                console.error('Error updating template:', error);
+                alert('Error updating template');
+            });
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>

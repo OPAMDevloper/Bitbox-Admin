@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+       
+            <form action="/api/auth/logout" method="POST" style="margin-right: 10px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        
+    </nav>
+    
+    <div class="dashboard" style="margin-top: 8%;">
+        <h1>Dashboard</h1>
+        <div class="stats-container">
+
+            <% if (accessTo.includes('AddUser')) { %>
+                <div class="stat-box" style="background-color: #ffc03d;" onclick="redirectTo('/api/userManagement/add-user')">
+                    <div class="stat-title">Add User</div>
+                   
+                </div>
+            <% } %>
+
+            <% if (accessTo.includes('UpdateUser')) { %>
+                <div class="stat-box" style="background-color: #b0b3c6;" onclick="redirectTo('/api/userManagement/update-user')">
+                    <div class="stat-title">Update User</div>
+
+                </div>
+            <% } %>
+
+           
+
+           
+            
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    function redirectTo(page) {
+        window.location.href = page;
+    }
+</script>

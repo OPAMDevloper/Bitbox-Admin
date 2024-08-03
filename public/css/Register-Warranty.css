@@ -1,0 +1,86 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.warranty-info {
+    width: 50%;
+    margin: auto;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.warranty-info h2 {
+    text-align: center;
+    color: black;
+}
+
+.warranty-info label {
+    color: black;
+    font-weight: bold;
+}
+
+.warranty-info input[type="text"],
+.warranty-info input[type="email"],
+.warranty-info input[type="number"],
+.warranty-info input[type="date"],
+.warranty-info input[type="file"],
+.warranty-info select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin: 5px 0 15px 0;
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.warranty-info input[type="radio"] {
+    margin: 0 10px 0 0;
+}
+
+.warranty-info input[type="radio"] + label {
+    margin: 0 20px 0 0;
+    color: black;
+}
+
+.warranty-info small {
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.verify-btn {
+    width: 100%;
+    background-color: green;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.verify-btn:hover {
+    background-color: green;
+}
+
+#warrantyOptions {
+    margin-top: 10px;
+}
+
+#purchaseDetails {
+    margin-top: 10px;
+}
+
+
+
+#computerFields {
+    margin-top: 20px;
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #ffb84d;
+}

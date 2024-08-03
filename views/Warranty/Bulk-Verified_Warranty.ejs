@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Warranty Verify</title>
+    <link rel="stylesheet" href="/css/Bulk-Warranty-Verify.css">
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            border-radius: 8px;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        /* Pagination styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            background-color: orange;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button.disabled {
+            background-color: orange;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #333; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <div class="warranty-info" style="margin-top: 8%;width: 80%;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h2>All Verified Warranties</h2>
+        <div class="controls">
+            <!-- <button onclick="filterWarranties('verified')">Verified</button> -->
+            <!-- <button onclick="filterWarranties('unverified')">Unverified</button> -->
+            <input type="text" style="border-width: 5px;border-color: orange;" id="searchInput" placeholder="Search by Serial Number" onkeyup="searchWarranty()">
+        </div>
+        <ul id="warrantyList">
+            <% groupedWarranties.forEach(group => { %>
+     
+                <li class="<%= group.commonFields.verify ? 'verified' : 'unverified' %>">
+                    <strong>Batch:</strong> <%= group._id %><br>
+                    <strong>Name:</strong> <%= group.commonFields.name %><br>
+                    <strong>Email:</strong> <%= group.commonFields.email %><br>
+                    <strong>Purchase Date:</strong> <%= group.commonFields.purchaseDate.toDateString() %><br>
+                    <strong>Expiry Date:</strong> <%= new Date(group.commonFields.expiryDate).toLocaleDateString()   %><br>
+                    <strong>Address:</strong> <%= group.commonFields.address %><br>
+                    <strong>City:</strong> <%= group.commonFields.city %><br>
+                    <strong>Pincode:</strong> <%= group.commonFields.pincode %><br>
+                    <strong>State:</strong> <%= group.commonFields.state %><br>
+                    <strong>Phone Number:</strong> <%= group.commonFields.phoneNumber %><br>
+                    <strong>Bill:</strong> <a href="https://bitbox-admin.onrender.com/<%= group.commonFields.billPdf %>" target="_blank"><%= group.commonFields.billPdf %></a><br>
+                    <strong>Verified:</strong> <%= group.commonFields.verify ? 'Yes' : 'No' %><br>
+                    <strong>Vendor:</strong> <%= group.commonFields.purchaseDetails %><br>
+                    <strong>Warranty Type:</strong> <%= group.commonFields.warrantyType %><br>
+                    <strong>Certificate ID:</strong> <%= group.commonFields.certificateID %><br>
+
+                    <h4>Serial Numbers and Models:</h4>
+                    <table class="serial-model-table">
+                        <thead>
+                            <tr>
+                                <th>Serial Number</th>
+                                <th>Model</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% group.serialAndModel.forEach(item => { %>
+                                <tr>
+                                    <td><%= item.serialNumber %></td>
+                                    <td><%= item.model %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+
+                    <!-- Update Button -->
+                    <button onclick="openUpdateModal('<%= group._id %>')">Update</button>
+
+                    <!-- Modal for Update -->
+                    <div id="updateModal_<%= group._id %>" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeUpdateModal('<%= group._id %>')">&times;</span>
+                            <form id="updateForm_<%= group._id %>" onsubmit="submitUpdateForm('<%= group._id %>'); return false;">
+                                <h2>Update Warranty Information</h2>
+                                <label>Batch ID: ( <small style="color: red;">not editabel</small> )</label>
+                                <input type="text" value="<%= group._id %>" readonly><br><br>
+                                <label>Name:</label>
+                                <input type="text" name="name" value="<%= group.commonFields.name %>" required><br><br>
+                                <label>Email:</label>
+                                <input type="email" name="email" value="<%= group.commonFields.email %>" required><br><br>
+                                <label>Address:</label>
+                                <input type="text" name="address" value="<%= group.commonFields.address %>" required><br><br>
+                                <label>Purchase Date:</label>
+                                <input type="date" name="purchaseDate" value="<%= group.commonFields.purchaseDate.toString().split('T')[0] %>" required><br><br>
+                                <label>City:</label>
+                                <input type="text" name="city" value="<%= group.commonFields.city %>" required><br><br>
+                                <label>Pincode:</label>
+                                <input type="text" name="pincode" value="<%= group.commonFields.pincode %>" required><br><br>
+                                <label>State:</label>
+                                <input type="text" name="state" value="<%= group.commonFields.state %>" required><br><br>
+                                <label>Phone Number:</label>
+                                <input type="text" name="phoneNumber" value="<%= group.commonFields.phoneNumber %>" required><br><br>
+                                <label>Model:</label>
+                                <input type="text" name="model" value="<%= group.serialAndModel[0].model %>" required><br><br>
+                                <label>Bill PDF:</label>
+                                <input type="text" name="billPdf" value="<%= group.commonFields.billPdf %>" required><br><br>
+                                <label>Warranty Type:</label>
+                                <input type="text" name="warrantyType" value="<%= group.commonFields.warrantyType %>" required><br><br>
+                                <% if (!group.commonFields.verify) { %>
+                                <label>Expiry Date:</label>
+                                <input type="date" name="expiryDate" value="<%= group.commonFields.expiryDate.toString().split('T')[0] %>" required><br><br>
+                                <% } %>
+                                <button type="submit">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <% if (!group.commonFields.verify) { %>
+                        <form action="/api/warrantyManagement/bulk-warranty-verify" method="POST">
+                            <input type="hidden" name="batch" value="<%= group._id %>">
+                            <input type="hidden" name="email" value="<%= group.commonFields.email %>">
+                            <input type="hidden" name="name" value="<%= group.commonFields.name %>">
+                            <input type="hidden" name="address" value="<%= group.commonFields.address %>">
+                            <input type="hidden" name="city" value="<%= group.commonFields.city %>">
+                            <input type="hidden" name="phoneNumber" value="<%= group.commonFields.phoneNumber %>">
+                            <input type="hidden" name="state" value="<%= group.commonFields.state %>">
+                            <input type="hidden" name="pincode" value="<%= group.commonFields.pincode %>">
+                            <input type="hidden" name="model" value="<%= group.serialAndModel[0].model %>">
+                            <input type="hidden" name="purchaseDate" value="<%= group.commonFields.purchaseDate %>">
+                            <input type="hidden" name="expiryDate" value="<%= group.commonFields.expiryDate %>">
+                            <input type="hidden" name="billPdf" value="<%= group.commonFields.billPdf %>">
+                            <input type="hidden" name="purchaseDetails" value="<%= group.commonFields.purchaseDetails %>">
+                            <input type="hidden" name="warrantyType" value="<%= group.commonFields.warrantyType %>">
+                            <input type="hidden" name="serialNumbers" value="<%= group.serialAndModel.map(item => item.serialNumber).join(',') %>">
+                            <button type="submit">Verify</button>
+                        </form>
+                    <% } %>
+                </li>
+               
+            <% }); %>
+        </ul>
+        <div class="pagination" id="paginationControls"></div>
+    </div>
+
+    <script>
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        const warrantyList = document.getElementById('warrantyList').children; 
+        //(warrantyList.length);
+        const totalPages = Math.ceil(warrantyList.length / itemsPerPage);
+
+        function showPage(page) {
+            currentPage = page;
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            for (let i = 0; i < warrantyList.length; i++) {
+                warrantyList[i].style.display = (i >= start && i < end) ? 'block' : 'none';
+            }
+            updatePaginationControls();
+        }
+
+        function updatePaginationControls() {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.toggle('disabled', i === currentPage);
+                button.onclick = () => showPage(i);
+                paginationControls.appendChild(button);
+            }
+        }
+
+        function filterWarranties(status) {
+            const allWarranties = Array.from(warrantyList);
+            allWarranties.forEach(warranty => {
+                if (status === 'verified') {
+                    warranty.style.display = warranty.classList.contains('verified') ? 'block' : 'none';
+                } else if (status === 'unverified') {
+                    warranty.style.display = warranty.classList.contains('unverified') ? 'block' : 'none';
+                } else {
+                    warranty.style.display = 'block';
+                }
+            });
+        }
+
+        function searchWarranty() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const ul = document.getElementById('warrantyList');
+    const li = ul.getElementsByTagName('li');
+    let found = false;
+
+    for (let i = 0; i < li.length; i++) {
+        const serialNumber = li[i].getElementsByTagName("strong")[0].nextSibling.textContent;
+        if (serialNumber.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+            found = true;
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+
+    // Check if no warranties were found
+    const notFoundMessage = document.getElementById('notFoundMessage');
+    if (!found) {
+        if (!notFoundMessage) {
+            const message = document.createElement('p');
+            message.id = 'notFoundMessage';
+            message.textContent = 'No warranties found.';
+            message.style.textAlign = 'center';
+            message.style.marginTop = '20px';
+            ul.parentNode.insertBefore(message, ul.nextSibling);
+        }
+    } else {
+        if (notFoundMessage) {
+            notFoundMessage.remove();
+        }
+    }
+}
+        showPage(1);
+
+        function openUpdateModal(batchId) {
+            document.getElementById(`updateModal_${batchId}`).style.display = 'block';
+        }
+
+        function closeUpdateModal(batchId) {
+            document.getElementById(`updateModal_${batchId}`).style.display = 'none';
+        }
+
+        function submitUpdateForm(batchId) {
+            const form = document.getElementById(`updateForm_${batchId}`);
+            const formData = new FormData(form);
+            fetch(`/api/warrantyManagement/update-warranty/${batchId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating warranty');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

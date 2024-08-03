@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Serial Number</title>
+    <link rel="stylesheet" href="/css/Register-Warranty.css">
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; color: black; font-weight: 600; margin-right: 100px;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 10px; background-color: #b0b3c6; border: none; align-items: end; justify-content: end; text-align: end; width: 0; margin-right: 100px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="warranty-info" style="margin-top: 10%;">
+        <h2>Add New Machine</h2>
+        <form id="addSerialForm" action="/api/inventoryManagement/Inventory-add" method="POST" enctype="multipart/form-data" style="background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
+            <label for="serialNumber">Serial Number</label>
+            <input type="text" name="serialNumber" placeholder="Enter Serial Number" pattern="[A-Z0-9]{10}" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="modelNumber">Model Number</label>
+            <input type="text" name="modelNumber" placeholder="Enter Model Number" oninput="this.value = this.value.toUpperCase()" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="testedBy">Tester</label>
+            <select name="testedBy" id="testerDropdown" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+                <option value="">Select Tester</option>
+                <!-- Options will be populated here -->
+            </select>
+            <label for="file">Upload Test Report</label>
+            <input type="file" name="file" accept=".pdf,.exe" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="processor">Processor</label>
+            <input type="text" name="processor" placeholder="Processor" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="motherboard">Motherboard</label>
+            <input type="text" name="motherboard" placeholder="Motherboard" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="RAM1">RAM-1</label>
+            <input type="text" name="RAM1" placeholder="RAM-1" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="RAM2">RAM-2</label>
+            <input type="text" name="RAM2" placeholder="RAM-2" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="RAM3">RAM-3</label>
+            <input type="text" name="RAM3" placeholder="RAM-3" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="RAM4">RAM-4</label>
+            <input type="text" name="RAM4" placeholder="RAM-4" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="HDD1">HDD-1</label>
+            <input type="text" name="HDD1" placeholder="HDD-1" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="HDD2">HDD-2</label>
+            <input type="text" name="HDD2" placeholder="HDD-2" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="SSD_SATA">SSD SATA</label>
+            <input type="text" name="SSD_SATA" placeholder="SSD SATA" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="SSD_NVMe">SSD NVMe</label>
+            <input type="text" name="SSD_NVMe" placeholder="SSD NVMe" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="WifiModule">Wifi Module</label>
+            <input type="text" name="WifiModule" placeholder="Wifi Module" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="SoftwareApp">Software / APP</label>
+            <input type="text" name="SoftwareApp" placeholder="Software / APP" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="AddOn">Add-On</label>
+            <input type="text" name="AddOn" placeholder="Add-On" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="GraphicCard">Graphic Card</label>
+            <input type="text" name="GraphicCard" placeholder="Graphic Card" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="BluetoothModule">Bluetooth Module</label>
+            <input type="text" name="BluetoothModule" placeholder="Bluetooth Module" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="monitorSize">Monitor Size</label>
+            <input type="text" name="monitorSize" placeholder="Monitor Size" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="operatingSystem">Operating System</label>
+            <input type="text" name="operatingSystem" placeholder="Operating System" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <label for="keyboardMouseCombo">Keyboard Mouse Combo</label>
+            <input type="text" name="keyboardMouseCombo" placeholder="Keyboard Mouse Combo" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+        
+            
+            <div id="dynamicFields">
+                <!-- Dynamic fields will be added here -->
+            </div>
+            <button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Add Serial Number</button>
+        </form>
+    </div>
+
+    <div class="warranty-info" style="margin-top: 20px;">
+        <h2>Add New Field</h2>
+        <form id="addNewFieldForm" style="background-color: #f9f9f9; padding: 20px; border-radius: 5px;">
+            <label for="newFieldName">New Field Name</label>
+            <input type="text" id="newFieldName" placeholder="Enter new field name" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+            <button type="button" id="addNewField" style="background-color: #4CAF50; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Add Field</button>
+        </form>
+    
+        <h2>Dynamic Fields</h2>
+        <div id="dynamicFieldsList" style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin-top: 20px;">
+            <!-- Dynamic fields will be listed here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Call the function to load dynamic fields when the page loads
+            loadDynamicFields();
+
+            // Event listener for adding new fields
+            document.getElementById('addNewField').addEventListener('click', addNewField);
+        });
+
+        function loadDynamicFields() {
+            fetch('/api/inventoryManagement/get-dynamic-fields')
+                .then(response => response.json())
+                .then(fields => {
+                    const dynamicFieldsList = document.getElementById('dynamicFieldsList');
+                    const dynamicFieldsContainer = document.getElementById('dynamicFields');
+                    
+                    // Clear existing fields
+                    dynamicFieldsList.innerHTML = '';
+                    dynamicFieldsContainer.innerHTML = '';
+
+                    fields.forEach(field => {
+                        // Add to the list
+                        const listItem = document.createElement('div');
+                        listItem.style.marginBottom = '10px';
+                        listItem.innerHTML = `
+                            <span>${field.name}</span>
+                            <button onclick="updateField('${field._id}', '${field.name}')" style="margin-left: 10px; background-color: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Update</button>
+                            <button onclick="deleteField('${field._id}')" style="margin-left: 10px; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button>
+                        `;
+                        dynamicFieldsList.appendChild(listItem);
+
+                        // Add to the form
+                        const formField = document.createElement('div');
+                        formField.innerHTML = `
+                            <label for="${field.name}">${field.name}</label>
+                            <input type="text" name="${field.name}" placeholder="${field.name}" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+                        `;
+                        dynamicFieldsContainer.appendChild(formField);
+                    });
+                })
+                .catch(error => console.error('Error loading dynamic fields:', error));
+        }
+
+        function addNewField() {
+            const fieldName = document.getElementById('newFieldName').value;
+            if (fieldName) {
+                saveDynamicField(fieldName);
+                document.getElementById('newFieldName').value = '';
+            }
+        }
+
+        function saveDynamicField(fieldName) {
+            fetch('/api/inventoryManagement/add-dynamic-field', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ fieldName }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Field added:', data);
+                loadDynamicFields(); // Reload the list after adding
+            })
+            .catch(error => console.error('Error adding field:', error));
+        }
+
+        function updateField(fieldId, currentName) {
+            const newName = prompt("Enter new name for the field", currentName);
+            if (newName && newName !== currentName) {
+                fetch(`/api/inventoryManagement/update-dynamic-field/${fieldId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ newName }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Field updated:', data);
+                    loadDynamicFields(); // Reload the list after updating
+                })
+                .catch(error => console.error('Error updating field:', error));
+            }
+        }
+
+        function deleteField(fieldId) {
+            if (confirm("Are you sure you want to delete this field?")) {
+                fetch(`/api/inventoryManagement/delete-dynamic-field/${fieldId}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Field deleted:', data);
+                    loadDynamicFields(); // Reload the list after deleting
+                })
+                .catch(error => console.error('Error deleting field:', error));
+            }
+        }
+
+                // Function to fetch and display existing dynamic fields
+                function fetchDynamicFields() {
+            fetch('/api/inventoryManagement/get-dynamic-fields')
+                .then(response => response.json())
+                .then(fields => {
+                    const dynamicFieldsList = document.getElementById('dynamicFieldsList');
+                    const dynamicFieldsContainer = document.getElementById('dynamicFields');
+
+                    // Clear existing fields
+                    dynamicFieldsList.innerHTML = '';
+                    dynamicFieldsContainer.innerHTML = '';
+
+                    fields.forEach(field => {
+                        // Add to the list
+                        const listItem = document.createElement('div');
+                        listItem.style.marginBottom = '10px';
+                        listItem.innerHTML = `
+                            <span>${field.name}</span>
+                            <button onclick="updateField('${field._id}', '${field.name}')" style="margin-left: 10px; background-color: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Update</button>
+                            <button onclick="deleteField('${field._id}')" style="margin-left: 10px; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button>
+                        `;
+                        dynamicFieldsList.appendChild(listItem);
+
+                        // Add to the form
+                        const formField = document.createElement('div');
+                        formField.innerHTML = `
+                            <label for="${field.name}">${field.name}</label>
+                            <input type="text" name="${field.name}" placeholder="${field.name}" style="width: calc(100% - 20px); padding: 10px; margin: 5px 0 15px 0; border: 1px solid #000000; border-radius: 4px; box-sizing: border-box;">
+                        `;
+                        dynamicFieldsContainer.appendChild(formField);
+                    });
+                })
+                .catch(error => console.error('Error fetching dynamic fields:', error));
+        }
+
+        function populateTesters() {
+            fetch('/api/inventoryManagement/testers')
+                .then(response => response.json())
+                .then(data => {
+                    const dropdown = document.getElementById('testerDropdown');
+                    data.forEach(tester => {
+                        const option = document.createElement('option');
+                        option.value = tester._id; // MongoDB ObjectId
+                        option.textContent = tester.name;
+                        dropdown.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching testers:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', populateTesters);
+
+        // document.getElementById('addSerialForm').addEventListener('submit', function(event) {
+        //     event.preventDefault(); // Prevent the default form submission
+
+        //     // Create a FormData object to capture the form data
+        //     var formData = new FormData(this);
+
+        //     // Send the form data using fetch API
+        //     fetch(this.action, {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.text())
+        //     .then(data => {
+        //         // Uncomment these lines when you're ready to reset the form and reload the page
+        //         alert(data);
+        //         window.location.reload();
+        //         form.reset();
+        //     })
+        //     .catch(error => console.error('Error adding serial number:', error));
+        // });
+    
+    
+    </script>
+</body>
+</html>

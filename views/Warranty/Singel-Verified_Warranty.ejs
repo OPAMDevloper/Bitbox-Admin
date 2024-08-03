@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Single Warranty</title>
+    <link rel="stylesheet" href="/css/Singel-Warranty-Verify.css">
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            border-radius: 8px;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .pagination button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .pagination button.active {
+        background-color: #007bff;
+        color: white;
+    }
+    </style>
+</head>
+<body>
+
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <div class="container warranty-info" style="margin-top: 8%;">
+        <h2>All Verified Warranties</h2>
+        <div class="controls">
+            <!-- <button onclick="filterWarranties('verified')">Verified</button> -->
+            <!-- <button onclick="filterWarranties('verified')">Verified</button> -->
+            <input type="text" style="border-width: 5px;" id="searchInput" placeholder="Search by Serial Number" onkeyup="searchWarranty()">
+        </div>
+        <ul id="warrantyList">
+            <% warranties.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).forEach(warranty => { %>
+
+                <li class="<%= warranty.verify ? 'verified' : 'unverified' %>">
+                    <strong>Serial Number:</strong> <%= warranty.serialNumber %><br>
+                    <strong>Expiry Date:</strong><%=  new Date(warranty.expiryDate).toLocaleDateString()   %><br>
+                    <strong>Name:</strong> <%= warranty.name %><br>
+                    <strong>Email:</strong> <%= warranty.email %><br>
+                    <% if (!warranty.verify) { %>
+                        <strong>Purchase Date:</strong> <%= warranty.purchaseDate.toDateString() %><br>
+                    <% } %>
+                    <strong>Address:</strong> <%= warranty.address %><br>
+                    <strong>City:</strong> <%= warranty.city %><br>
+                    <strong>Pincode:</strong> <%= warranty.pincode %><br>
+                    <strong>State:</strong> <%= warranty.state %><br>
+                    <strong>Phone Number:</strong> <%= warranty.phoneNumber %><br>
+                    <strong>Model:</strong> <%= warranty.model %><br>
+                    <strong>Verified:</strong> <%= warranty.verify ? 'Yes' : 'No' %><br>
+                    <strong>Vendor:</strong> <%= warranty.purchaseDetails %><br>
+                    <strong>Warranty Type:</strong> <%= warranty.warrantyType %><br>
+                    <strong>Certificate ID:</strong> <%= warranty.certificateID %><br>
+
+                    <strong>Bill:</strong><a href="https://bitbox-admin.onrender.com/<%= warranty.billPdf %>" target="_blank"><%= warranty.billPdf %></a><br>
+                    
+                    <!-- Update Button -->
+                    <button onclick="openUpdateModal('<%= warranty._id %>')">Update</button>
+                    <br><br>
+
+                    <!-- Modal for Update -->
+                    <div id="updateModal_<%= warranty._id %>" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeUpdateModal('<%= warranty._id %>')">&times;</span>
+                            <form id="updateForm_<%= warranty._id %>" onsubmit="submitUpdateForm('<%= warranty._id %>'); return false;">
+                                <h2>Update Warranty Information</h2>
+                                <label>Serial Number: ( <small style="color: red;">not editabel</small> )</label>
+                                <input type="text" value="<%= warranty.serialNumber %>"  readonly><br><br>
+                                <label>Name:</label>
+                                <input type="text" name="name" value="<%= warranty.name %>" required><br><br>
+                                <label>Email:</label>
+                                <input type="email" name="email" value="<%= warranty.email %>" required><br><br>
+                                <% if (!warranty.verify) { %>
+                                    <label>Purchase Date:</label>
+                                    <input type="date" name="purchaseDate" value="<%= warranty.purchaseDate.toISOString().split('T')[0] %>" required><br><br>
+                                <% } %>
+                                <label>Address:</label>
+                                <input type="text" name="address" value="<%= warranty.address %>" required><br><br>
+                                <label>City:</label>
+                                <input type="text" name="city" value="<%= warranty.city %>" required><br><br>
+                                <label>Pincode:</label>
+                                <input type="text" name="pincode" value="<%= warranty.pincode %>" required><br><br>
+                                <label>State:</label>
+                                <input type="text" name="state" value="<%= warranty.state %>" required><br><br>
+                                <label>Phone Number:</label>
+                                <input type="text" name="phoneNumber" value="<%= warranty.phoneNumber %>" required><br><br>
+                                <label>Model:</label>
+                                <input type="text" name="model" value="<%= warranty.model %>" required><br><br>
+                                <!-- <label>Bill PDF:</label><small><%= warranty.billPdf %></small>
+                                <input type="file" name="billPdf" value="<%= warranty.billPdf %>"><br><br> -->
+                                <label>Warranty Type:</label>
+                                <input type="text" name="warrantyType" value="<%= warranty.warrantyType %>" required><br><br>
+                                <% if (!warranty.verify) { %>
+                                    <label>Expiry Date:</label>
+                                    <input type="text" name="expiryDate" value="<%= warranty.expiryDate %>" required><br><br>
+                                <% } %>
+                                <button type="submit">Submit</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <% if (!warranty.verify) { %>
+                        <form action="/api/warrantyManagement/verify-warranty" method="POST">
+                            <input type="hidden" name="serialNumber" value="<%= warranty.serialNumber %>">
+                            <input type="hidden" name="email" value="<%= warranty.email %>">
+                            <input type="hidden" name="expiryDate" value="<%= warranty.expiryDate %>">
+                            <div class="form-row">
+                                <input type="number" name="duration" placeholder="Modify Duration" required>
+                                <input type="date" name="purchaseDate" placeholder="Modify Purchase Date" required>
+                            </div>
+                            <input type="hidden" name="name" value="<%= warranty.name %>">
+                            <input type="hidden" name="address" value="<%= warranty.address %>">
+                            <input type="hidden" name="city" value="<%= warranty.city %>">
+                            <input type="hidden" name="phonenumber" value="<%= warranty.phoneNumber %>">
+                            <input type="hidden" name="model" value="<%= warranty.model %>">
+                            <input type="hidden" name="billpdf" value="<%= warranty.billPdf %>">
+                            <input type="hidden" name="warrantyType" value="<%= warranty.warrantyType %>">
+    
+                            <button type="submit" class="verify-btn">Verify</button>
+                        </form>
+                    <% } %>
+                </li>
+           
+            <% }); %>
+        </ul>
+
+        <!-- Pagination controls -->
+        <!-- Pagination controls -->
+<div class="pagination">
+    <% if (currentPage > 1) { %>
+        <button onclick="goToPage(<%= currentPage - 1 %>)">Previous</button>
+    <% } %>
+    
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <button onclick="goToPage(<%= i %>)" <%= i === currentPage ? 'class="active"' : '' %>><%= i %></button>
+    <% } %>
+    
+    <% if (currentPage < totalPages) { %>
+        <button onclick="goToPage(<%= currentPage + 1 %>)">Next</button>
+    <% } %>
+</div>
+    </div>
+
+    <script>
+        const itemsPerPage = 10;
+        let currentPage = 1;
+
+        function goToPage(page) {
+    window.location.href = `/singel-warranty-verify?page=${page}`;
+}
+
+
+        function filterWarranties(status) {
+            const warrantyList = document.getElementById('warrantyList').getElementsByTagName('li');
+            for (let i = 0; i < warrantyList.length; i++) {
+                const warranty = warrantyList[i];
+                if (status === 'verified' && warranty.classList.contains('verified')) {
+                    warranty.style.display = 'block';
+                } else if (status === 'unverified' && warranty.classList.contains('unverified')) {
+                    warranty.style.display = 'block';
+                } else {
+                    warranty.style.display = 'none';
+                }
+            }
+        }
+
+        function searchWarranty() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toUpperCase();
+        const ul = document.getElementById('warrantyList');
+        const li = ul.getElementsByTagName('li');
+        let found = false;
+
+        for (let i = 0; i < li.length; i++) {
+            const serialNumber = li[i].getElementsByTagName("strong")[0].nextSibling.textContent;
+            if (serialNumber.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+                found = true;
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+
+        // Handle "not found" message
+        let notFoundMessage = document.getElementById('notFoundMessage');
+        if (!found) {
+            if (!notFoundMessage) {
+                notFoundMessage = document.createElement('p');
+                notFoundMessage.id = 'notFoundMessage';
+                notFoundMessage.textContent = 'No warranties found.';
+                notFoundMessage.style.textAlign = 'center';
+                notFoundMessage.style.marginTop = '20px';
+                ul.appendChild(notFoundMessage);
+            }
+        } else {
+            if (notFoundMessage) {
+                notFoundMessage.remove();
+            }
+        }
+    }
+
+        // Function to open update modal
+        function openUpdateModal(warrantyId) {
+            const modal = document.getElementById('updateModal_' + warrantyId);
+            modal.style.display = 'block';
+        }
+
+        // Function to close update modal
+        function closeUpdateModal(warrantyId) {
+            const modal = document.getElementById('updateModal_' + warrantyId);
+            modal.style.display = 'none';
+        }
+
+        // Function to submit update form
+        function submitUpdateForm(warrantyId) {
+            const form = document.getElementById('updateForm_' + warrantyId);
+            const formData = new FormData(form);
+            const serializedFormData = {};
+            for (let [key, value] of formData.entries()) {
+                serializedFormData[key] = value;
+            }
+
+            fetch(`/api/warrantyManagement/update-warranty/${warrantyId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(serializedFormData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Warranty updated successfully.');
+                closeUpdateModal(warrantyId);
+                location.reload(); // Reload the page to reflect changes
+            })
+            .catch(error => console.error('Error updating warranty:', error));
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Admin</title>
+    <link rel="stylesheet" href="/css/userManagement.css">
+    <style>
+        /* Pop-up form styles */
+        .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60%;
+        max-width: 600px;
+        max-height: 80vh; /* Set maximum height to 80% of viewport height */
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        overflow-y: auto; /* Enable vertical scrolling */
+    }
+    .popup-footer {
+        position: sticky;
+        bottom: 0;
+        background-color: #fff;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+        .popup h2 {
+            margin-top: 0;
+        }
+
+        .popup button.close {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            float: right;
+        }
+
+        .popup button.close:hover {
+            background-color: #cc0000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: orange;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-left: 30%;font-weight: 600;color: black;">
+            Bitbox Admin Panel
+        </div>
+       
+            <form action="/api/auth/logout" method="POST" style="margin-right: 10px; background-color: #b0b3c6; border: none; align-items: end; justify-content: end; text-align: end; width: 0; margin-right: 100px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+       
+    </nav>
+
+    <br><br><br><br><br><br><br><br>
+
+    <!-- Display existing users -->
+    <h2>Existing Admins:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Roles</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(user => { %>
+                <tr>
+                    <td><%= user.username %></td>
+                    <td><%= user.accessTo.join(', ') %></td>
+                    <td>
+                        <!-- Container for buttons -->
+                        <div style="display: flex; flex-direction: column;">
+                            <% if (user.username !== 'SuperAdmin') { %>
+                                <!-- Update button -->
+                                <button onclick="showUpdateForm('<%= user._id %>')" style="background-color: orange; color: black; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; margin-bottom: 5px; transition: background-color 0.3s ease;">
+                                    Update
+                                </button>
+                                <!-- Delete form -->
+                                <form id="deleteForm<%= user._id %>" action="/api/userManagement/users/<%= user._id %>" method="POST" style="background-color:  #f0f0f0; border: none;">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px;">
+                                        Delete
+                                    </button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <!-- Update form popup -->
+    <div id="updatePopup" class="popup">
+        <button class="close" onclick="hideUpdateForm()">X</button>
+        <h2>Update Admin</h2>
+        <form id="updateForm" action="/api/userManagement/update" method="POST">
+            <input type="hidden" id="updateId" name="_id">
+            <label for="updateUsername">Username:</label>
+            <input type="text" id="updateUsername" name="username" required><br><br>
+    
+            <label for="updatePassword">New Password:</label>
+            <input type="text" id="updatePassword" name="password"><br><br>
+    
+            <label>Roles:</label><br>
+            <input type="checkbox" id="updateRoleUserManagement" name="roles" value="UserManagement">
+            <label for="updateRoleUserManagement">User Management</label><br>
+
+            <div id="updateUserManagementOptions" style="display: none; margin-left: 20px;">
+                <input type="checkbox" id="updateRoleAddUser" name="roles" value="AddUser">
+                <label for="updateRoleAddUser">Add User</label><br>
+            
+                <input type="checkbox" id="updateRoleUpdateUser" name="roles" value="UpdateUser">
+                <label for="updateRoleUpdateUser">Update User</label><br>
+            </div>
+    
+            <input type="checkbox" id="updateRoleWarrantyManagement" name="roles" value="WarrantyManagement" onchange="toggleUpdateWarrantyOptions(this)">
+            <label for="updateRoleWarrantyManagement">Warranty Management</label><br>
+    
+            <div id="updateWarrantyOptions" style="display: none; margin-left: 20px;">
+                <input type="checkbox" id="updateRoleRegisterWarranty" name="roles" value="RegisterWarranty">
+                <label for="updateRoleRegisterWarranty">Register Warranty</label><br>
+    
+                <input type="checkbox" id="updateRoleSingleVerification" name="roles" value="SingleVerification">
+                <label for="updateRoleSingleVerification">Single Verification</label><br>
+    
+                <input type="checkbox" id="updateRoleBulkVerification" name="roles" value="BulkVerification">
+                <label for="updateRoleBulkVerification">Bulk Verification</label><br>
+    
+                <input type="checkbox" id="updateRoleExpiringWarranties" name="roles" value="ExpiringWarranties">
+                <label for="updateRoleExpiringWarranties">Expiring Warranties</label><br>
+
+                <input type="checkbox" id="updateRoleSingleVerified" name="roles" value="SingleVerified">
+                <label for="updateRoleSingleVerified">Single Verified Warranties</label><br>
+
+                <input type="checkbox" id="updateRoleBulkVerified" name="roles" value="BulkVerified">
+                <label for="updateRoleBulkVerified">Bulk Verified Warranties</label><br>
+            </div>
+    
+            <input type="checkbox" id="updateRoleInventoryManagement" name="roles" value="InventoryManagement" onchange="toggleUpdateInventoryOptions(this)">
+            <label for="updateRoleInventoryManagement">Inventory Management</label><br>
+    
+            <div id="updateInventoryOptions" style="display: none; margin-left: 20px;">
+                <input type="checkbox" id="updateRoleViewInventory" name="roles" value="ViewInventory">
+                <label for="updateRoleViewInventory">View Inventory</label><br>
+    
+                <input type="checkbox" id="updateRoleUpdateInventory" name="roles" value="UpdateInventory">
+                <label for="updateRoleUpdateInventory">Update Inventory</label><br>
+    
+                <input type="checkbox" id="updateRoleAddInventory" name="roles" value="AddInventory">
+                <label for="updateRoleAddInventory">Add Inventory</label><br>
+
+                <input type="checkbox" id="updateAddTester" name="roles" value="AddTester">
+                <label for="updateAddTester">Add Tester</label><br>
+
+                <input type="checkbox" id="updateDeleteInventory" name="roles" value="DeleteInventory">
+                <label for="updateDeleteInventory">Delete Inventory</label><br>
+
+                <input type="checkbox" id="updateAddDynamicField" name="roles" value="AddDynamicField">
+                <label for="updateAddDynamicField">Add Dynamic Field</label><br>
+            </div>
+    
+            <input type="checkbox" id="updateRoleTicketSystem" name="roles" value="TicketSystem" onchange="toggleUpdateTicketOptions(this)">
+<label for="updateRoleTicketSystem">Ticket System</label><br>
+
+<div id="updateTicketOptions" style="display: none; margin-left: 20px;">
+    <input type="checkbox" id="updateRoleAddStatus" name="roles" value="AddStatus">
+    <label for="updateRoleAddStatus">Add Status</label><br>
+
+    <input type="checkbox" id="updateRoleModifyStatus" name="roles" value="ModifyStatus">
+    <label for="updateRoleModifyStatus">Modify Status</label><br>
+
+    <input type="checkbox" id="updateRoleAddTicket" name="roles" value="AddTicket">
+    <label for="updateRoleAddTicket">Add Ticket</label><br>
+</div>
+    
+            <input type="checkbox" id="updateRoleResellerManagement" name="roles" value="ResellerManagement" onchange="toggleUpdateResellerOptions(this)">
+            <label for="updateRoleResellerManagement">Reseller Management</label><br>
+
+            <div id="updateResellerOptions" style="display: none; margin-left: 20px;">
+                <input type="checkbox" id="updateRoleAddReseller" name="roles" value="AddReseller">
+                <label for="updateRoleAddReseller">Add Reseller</label><br>
+
+                <input type="checkbox" id="updateRoleUpdateReseller" name="roles" value="UpdateReseller">
+                <label for="updateRoleUpdateReseller">Update Reseller</label><br>
+            </div>
+    
+            <input type="checkbox" id="updateRoleDriverManagement" name="roles" value="DriverManagement" onchange="toggleUpdateDriverOptions(this)">
+            <label for="updateRoleDriverManagement">Driver Management</label><br><br>
+
+            <div id="updateDriverOptions" style="display: none; margin-left: 20px;">
+                <input type="checkbox" id="updateRoleAddDriver" name="roles" value="AddDriver">
+                <label for="updateRoleAddDriver">Add Driver</label><br>
+    
+                <input type="checkbox" id="updateRoleUpdateDriver" name="roles" value="UpdateDriver">
+                <label for="updateRoleUpdateDriver">Update Driver</label><br>
+            </div>
+
+            <input type="checkbox" id="updateRoleEmailManagement" name="roles" value="EmailManagement">
+            <label for="updateRoleEmailManagement">Email Management</label><br>
+    
+            
+                <button type="submit">Update Admin</button>
+           
+        </form>
+    </div>
+
+    <script>
+        function showUpdateForm(id) {
+            //(id);
+            fetch(`/api/userManagement/user/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(user => {
+                    document.getElementById('updateId').value = user._id;
+                    document.getElementById('updateUsername').value = user.username;
+                    document.getElementById('updatePassword').value = user.password; // Clear the password field
+                    document.getElementById('updateRoleUserManagement').checked = user.accessTo.includes('UserManagement');
+                    document.getElementById('updateRoleWarrantyManagement').checked = user.accessTo.includes('WarrantyManagement');
+                    document.getElementById('updateRoleInventoryManagement').checked = user.accessTo.includes('InventoryManagement');
+                    document.getElementById('updateRoleTicketSystem').checked = user.accessTo.includes('TicketSystem');
+                    document.getElementById('updateRoleResellerManagement').checked = user.accessTo.includes('ResellerManagement');
+                    document.getElementById('updateRoleDriverManagement').checked = user.accessTo.includes('DriverManagement');
+                    document.getElementById('updateRoleEmailManagement').checked = user.accessTo.includes('EmailManagement');
+                    
+                    // Handle the options for each role
+                    toggleUpdateWarrantyOptions(document.getElementById('updateRoleWarrantyManagement'));
+                    toggleUpdateInventoryOptions(document.getElementById('updateRoleInventoryManagement'));
+                    toggleUpdateDriverOptions(document.getElementById('updateRoleDriverManagement'));
+                    toggleUpdateResellerOptions(document.getElementById('updateRoleResellerManagement'));
+
+                    // Check sub-options based on user's access
+                    if (user.accessTo.includes('WarrantyManagement')) {
+                        document.getElementById('updateRoleRegisterWarranty').checked = user.accessTo.includes('RegisterWarranty');
+                        document.getElementById('updateRoleSingleVerification').checked = user.accessTo.includes('SingleVerification');
+                        document.getElementById('updateRoleBulkVerification').checked = user.accessTo.includes('BulkVerification');
+                        document.getElementById('updateRoleExpiringWarranties').checked = user.accessTo.includes('ExpiringWarranties');
+                        document.getElementById('updateRoleSingleVerified').checked = user.accessTo.includes('SingleVerified');
+                        document.getElementById('updateRoleBulkVerified').checked = user.accessTo.includes('BulkVerified');
+                    }
+
+                    if (user.accessTo.includes('InventoryManagement')) {
+                        document.getElementById('updateRoleViewInventory').checked = user.accessTo.includes('ViewInventory');
+                        document.getElementById('updateRoleUpdateInventory').checked = user.accessTo.includes('UpdateInventory');
+                        document.getElementById('updateRoleAddInventory').checked = user.accessTo.includes('AddInventory');
+                        document.getElementById('updateAddTester').checked = user.accessTo.includes('AddTester');
+                        document.getElementById('updateDeleteInventory').checked = user.accessTo.includes('DeleteInventory');
+                        document.getElementById('updateAddDynamicField').checked = user.accessTo.includes('AddDynamicField');
+                        
+                    }
+
+                    if (user.accessTo.includes('DriverManagement')) {
+                        document.getElementById('updateRoleAddDriver').checked = user.accessTo.includes('AddDriver');
+                        document.getElementById('updateRoleUpdateDriver').checked = user.accessTo.includes('UpdateDriver');
+                    }
+
+                    if (user.accessTo.includes('ResellerManagement')) {
+                        document.getElementById('updateRoleAddReseller').checked = user.accessTo.includes('AddReseller');
+                        document.getElementById('updateRoleUpdateReseller').checked = user.accessTo.includes('UpdateReseller');
+                    }
+
+                    document.getElementById('updateRoleUserManagement').checked = user.accessTo.includes('UserManagement');
+                    toggleUpdateUserManagementOptions(document.getElementById('updateRoleUserManagement'));
+
+                    if (user.accessTo.includes('UserManagement')) {
+                        document.getElementById('updateRoleAddUser').checked = user.accessTo.includes('AddUser');
+                        document.getElementById('updateRoleUpdateUser').checked = user.accessTo.includes('UpdateUser');
+                    }
+
+                    document.getElementById('updateRoleTicketSystem').checked = user.accessTo.includes('TicketSystem');
+                    toggleUpdateTicketOptions(document.getElementById('updateRoleTicketSystem'));
+
+                    if (user.accessTo.includes('TicketSystem')) {
+                        document.getElementById('updateRoleAddStatus').checked = user.accessTo.includes('AddStatus');
+                        document.getElementById('updateRoleModifyStatus').checked = user.accessTo.includes('ModifyStatus');
+                        document.getElementById('updateRoleAddTicket').checked = user.accessTo.includes('AddTicket');
+                    }
+
+
+
+                    document.getElementById('updatePopup').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to fetch user data. Please try again.');
+                });
+        }
+
+        function hideUpdateForm() {
+            document.getElementById('updatePopup').style.display = 'none';
+        }
+
+        function toggleUpdateUserManagementOptions(checkbox) {
+        document.getElementById('updateUserManagementOptions').style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+        function toggleUpdateWarrantyOptions(checkbox) {
+            document.getElementById('updateWarrantyOptions').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleUpdateInventoryOptions(checkbox) {
+            document.getElementById('updateInventoryOptions').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleUpdateDriverOptions(checkbox) {
+            document.getElementById('updateDriverOptions').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleUpdateResellerOptions(checkbox) {
+            document.getElementById('updateResellerOptions').style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleUpdateTicketOptions(checkbox) {
+    document.getElementById('updateTicketOptions').style.display = checkbox.checked ? 'block' : 'none';
+}
+    </script>
+</body>
+</html>

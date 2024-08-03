@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Ticket Admin Page</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding-top: 70px; /* Add padding to account for the fixed nav bar */
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto; /* Center the container and add some top margin */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    width: 60%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.tickets {
+    width: 100%;
+}
+
+.ticket-item {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-item p {
+    margin: 5px 0;
+}
+
+.ticket-item strong {
+    color: #333;
+}
+
+.status-dropdown {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-dropdown select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 70%;
+}
+
+.update-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #28a745;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.update-button:hover {
+    background-color: #218838;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+    background-color: #b0b3c6;
+    color: white;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.logo img {
+    height: 40px;
+}
+
+.title {
+    font-size: 1.2em;
+    margin-right: 25px;
+    color: black;
+    font-weight: 600;
+}
+
+nav form {
+    margin-right: 50px;
+}
+
+nav button {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+nav button:hover {
+    background-color: #cc0000;
+}
+
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="/images/BitBox_logo1.png" alt="BitBox Logo">
+        </div>
+        <div class="title">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST">
+            <button type="submit">Logout</button>
+        </form>
+    </nav>
+
+  
+        <div class="container">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by Certificate Number or Status" style="width: 500px;">
+            </div>
+            <p id="noResultsMessage" style="display: none; text-align: center; color: red;">No results found</p>
+            <div class="tickets" id="tickets"></div>
+        </div>
+    
+
+   
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchStatusOptions().then(loadTickets);
+        });
+
+        let statusOptions = [];
+
+        async function fetchStatusOptions() {
+            try {
+                const response = await fetch('/api/ticketManagement/statusOptions');
+                const data = await response.json();
+                statusOptions = data.map(option => option.status); // Assuming each option has a `status` field
+            } catch (error) {
+                console.error('Error fetching status options:', error);
+            }
+        }
+
+        function loadTickets() {
+            fetch('/api/ticketManagement/tickets')
+                .then(response => response.json())
+                .then(data => {
+                    displayTickets(data);
+                });
+        }
+
+        function displayTickets(tickets) {
+    const ticketsContainer = document.getElementById('tickets');
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    ticketsContainer.innerHTML = ''; // Clear the current tickets
+    ticketsContainer.style.display = 'block';
+
+    if (tickets.length === 0) {
+        document.getElementById('noResultsMessage').style.display = 'block';
+    } else {
+        document.getElementById('noResultsMessage').style.display = 'none';
+        tickets.forEach(ticket => {
+            const ticketItem = document.createElement('div');
+            ticketItem.className = 'ticket-item';
+            ticketItem.innerHTML = `
+                <p><strong>Certificate ID:</strong> ${ticket.certificateId}</p>
+                <p><strong>Phone Number:</strong> ${ticket.phoneNumber}</p>
+                <p><strong>Email ID:</strong> ${ticket.emailId}</p>
+                <p><strong>Serial Number:</strong> ${ticket.serialNumber}</p>
+                <p><strong>Message:</strong> ${ticket.message}</p>
+                <p><strong>Status:</strong> ${ticket.status}</p>
+                <div class="status-dropdown">
+                    <select id="status-${ticket._id}">
+                        ${statusOptions.map(option => `<option value="${option}" ${ticket.status === option ? 'selected' : ''}>${option}</option>`).join('')}
+                    </select>
+                    <button class="update-button" onclick="updateStatus('${ticket._id}')">Update Status</button>
+                </div>
+            `;
+            ticketsContainer.appendChild(ticketItem);
+        });
+    }
+
+    window.scrollTo(0, scrollPosition); // Restore scroll position
+}
+
+        function updateStatus(ticketId) {
+            const newStatus = document.getElementById(`status-${ticketId}`).value;
+            console.log(newStatus);
+            fetch(`/api/ticketManagement/updateStatus/${ticketId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Status updated successfully');
+                loadTickets(); // Reload the tickets after updating the status
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+    fetchStatusOptions().then(loadTickets);
+
+    // Add event listener for search input
+    document.getElementById('search-input').addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query) {
+            searchTickets(query);
+        } else {
+            loadTickets();
+        }
+    });
+});
+
+function searchTickets(query) {
+    fetch(`/api/ticketManagement/search/${query}`)
+        .then(response => response.json())
+        .then(data => {
+            displayTickets(data);
+        })
+        .catch(error => {
+            console.error('Error searching tickets:', error);
+        });
+}
+
+    </script>
+</body>
+</html>

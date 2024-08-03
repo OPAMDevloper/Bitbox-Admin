@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 80px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #ff6900;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff3e6;
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #ffcc99;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .serial-details {
+            flex: 1;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 10px;
+            border-left: 2px solid #ffcc99;
+            padding-left: 10px;
+        }
+
+        .actions button {
+            margin-bottom: 10px;
+        }
+
+        button, input[type="submit"] {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: #e05d00;
+        }
+
+        .delete-btn {
+            background-color: #ff0000;
+        }
+
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .update-btn {
+            background-color: #ffcc00;
+            color: #333;
+        }
+
+        .update-btn:hover {
+            background-color: #e6b800;
+        }
+
+        a {
+            display: inline-block;
+            text-align: center;
+            background-color: #ff6900;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #e05d00;
+        }
+
+        .search-bar {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .search-bar input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .popup input, .popup label {
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        .popup button {
+            background-color: #ff6900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .popup button:hover {
+            background-color: #e05d00;
+        }
+
+        .popup .cancel-btn {
+            background-color: #ccc;
+        }
+
+        .popup .cancel-btn:hover {
+            background-color: #999;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+       
+        <div class="title" style="font-size: 1.2em;color: black;font-weight: 600;margin-right: 100px;">
+            Bitbox Admin Panel
+        </div>
+        <form action="/api/auth/logout" method="POST" style="margin-right: 10px; background-color: #b0b3c6; border: none; align-items: end; justify-content: end; text-align: end; width: 0; margin-right: 100px;">
+            <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="container" style="margin-top: 8%;">
+        <h2>Search Serial Numbers</h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by Serial Number..." oninput="filterSerials()">
+        </div>
+        <p id="noResultsMessage" style="display: none; text-align: center; color: red;">No results found</p>
+
+
+        <div class="serial-info">
+            <h2>All Serial Numbers</h2>
+            <ul id="serialList">
+                <% serials.forEach(serial => { %>
+                    <li>
+                        <div class="serial-details">
+                            <strong>Serial Number:</strong> <%= serial.serialNumber %><br>
+                            <strong>Model Number:</strong> <%= serial.modelNumber %><br>
+                            <strong>Tested By:</strong> <%= serial.testedBy %><br>
+                            <strong>Uploaded File:</strong> <a href="/uploads/<%= serial.uploadedFile %>" target="_blank"><%= serial.uploadedFile %></a><br>
+                            <!-- <h2 style="color: #e65c00;text-align: left;">Machine Specification :- </h2> 
+                            <strong>Processor:</strong> <%= serial.processor %><br>
+                            <strong>Motherboard:</strong> <%= serial.motherboard %><br>
+                            <strong>RAM:</strong> <%= serial.ram %><br>
+                            <strong>SSD:</strong> <%= serial.ssd %><br>
+                            <strong>HDD:</strong> <%= serial.hdd %><br>
+                            <strong>Monitor Size:</strong> <%= serial.monitorSize %> -->
+                        </div>
+
+                        <div id="overlay" class="overlay" onclick="hideUpdatePopup()"></div>
+
+                        <div id="updatePopup" class="popup">
+                            <h2>Update Serial Number</h2>
+                            <form action="/api/inventoryManagement/Inventory-update" method="POST">
+                                <input type="hidden" id="updateId" name="_id">
+                                <label for="updateSerialNumber">Serial Number:</label>
+                                <input type="text" id="updateSerialNumber" name="serialNumber">
+                                <label for="updateModelNumber">Model Number:</label>
+                                <input type="text" id="updateModelNumber" name="modelNumber">
+                                <label for="updateTestedBy">Tested By:</label>
+                                <input type="text" id="updateTestedBy" name="testedBy">
+                                <label for="updateProcessor">Processor:</label>
+                                <input type="text" id="updateProcessor" name="processor">
+                                <label for="updateMotherboard">Motherboard:</label>
+                                <input type="text" id="updateMotherboard" name="motherboard">
+                                <label for="updateRam">RAM:</label>
+                                <input type="text" id="updateRam" name="ram">
+                                <label for="updateSsd">SSD:</label>
+                                <input type="text" id="updateSsd" name="ssd">
+                                <label for="updateHdd">HDD:</label>
+                                <input type="text" id="updateHdd" name="hdd">
+                                <label for="updateMonitorSize">Monitor Size:</label>
+                                <input type="text" id="updateMonitorSize" name="monitorSize">
+                                <button type="submit">Update</button>
+                                <button type="button" class="cancel-btn" onclick="hideUpdatePopup()">Cancel</button>
+                            </form>
+                        </div>
+
+
+                        <div class="actions">
+                            <!-- <button class="update-btn" onclick="showUpdatePopup('<%= encodeURIComponent(JSON.stringify(serial)) %>')">Update</button> -->
+                            <form id="deleteForm" method="POST">
+                                <input type="hidden" name="_id" value="<%= serial._id %>">
+                                <input type="button" class=""style="background-color:orange" value="Delete"  onclick="deleteSerial('<%= serial._id %>')">
+                            </form>
+                            
+                        </div>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function deleteSerial(serialId) {
+    try {
+        const response = await fetch('/api/inventoryManagement/Inventory-delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: serialId })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            // Optionally, refresh the page or update the UI to remove the deleted serial entry
+            location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (err) {
+        alert('An error occurred while deleting the serial number');
+    }
+}
+
+
+        // Function to filter serials based on search input
+        function filterSerials() {
+    var input, filter, ul, li, div, i, txtValue;
+    input = document.getElementById('searchInput');
+    filter = input.value.toUpperCase();
+    ul = document.getElementById('serialList');
+    li = ul.getElementsByTagName('li');
+    var noResults = true; // Flag to track if any result is found
+
+    for (i = 0; i < li.length; i++) {
+        div = li[i].getElementsByTagName('div')[0];
+        txtValue = div.textContent || div.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+            noResults = false; // Result found
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+
+    // Show or hide the "No results found" message
+    if (noResults) {
+        document.getElementById('noResultsMessage').style.display = "block";
+    } else {
+        document.getElementById('noResultsMessage').style.display = "none";
+    }
+}
+// Function to show the update popup with pre-filled data
+function showUpdatePopup(serialData) {
+    const serial = JSON.parse(decodeURIComponent(serialData));
+    document.getElementById('updateId').value = serial._id;
+    document.getElementById('updateSerialNumber').value = serial.serialNumber;
+    document.getElementById('updateModelNumber').value = serial.modelNumber;
+    document.getElementById('updateTestedBy').value = serial.testedBy;
+    document.getElementById('updateProcessor').value = serial.processor;
+    document.getElementById('updateMotherboard').value = serial.motherboard;
+    document.getElementById('updateRam').value = serial.ram;
+    document.getElementById('updateSsd').value = serial.ssd;
+    document.getElementById('updateHdd').value = serial.hdd;
+    document.getElementById('updateMonitorSize').value = serial.monitorSize;
+    document.getElementById('updatePopup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+// Function to hide the update popup
+function hideUpdatePopup() {
+    document.getElementById('updatePopup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+    </script>
+</body>
+</html>

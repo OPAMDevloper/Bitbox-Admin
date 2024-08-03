@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Driver</title>
+    <style>
+        /* new */
+        body {
+    font-family: Arial, sans-serif;
+}
+
+.warranty-info {
+    width: 50%;
+    margin: auto;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.warranty-info h2 {
+    text-align: center;
+    color: black;
+}
+
+.warranty-info label {
+    color: black;
+    font-weight: bold;
+}
+
+.warranty-info input[type="text"],
+.warranty-info input[type="email"],
+.warranty-info input[type="number"],
+.warranty-info input[type="date"],
+.warranty-info input[type="file"],
+.warranty-info select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin: 5px 0 15px 0;
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.warranty-info input[type="radio"] {
+    margin: 0 10px 0 0;
+}
+
+.warranty-info input[type="radio"] + label {
+    margin: 0 20px 0 0;
+    color: black;
+}
+
+.warranty-info small {
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.verify-btn {
+    width: 100%;
+    background-color: green;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.verify-btn:hover {
+    background-color: green;
+}
+
+#warrantyOptions {
+    margin-top: 10px;
+}
+
+#purchaseDetails {
+    margin-top: 10px;
+}
+
+
+
+#computerFields {
+    margin-top: 20px;
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #ffb84d;
+}
+
+        /* old */
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    text-align: center;
+    color: #ff6600;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #ff6600;
+    color: white;
+}
+
+button, input[type="submit"] {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #e65c00;
+}
+
+a {
+    display: inline-block;
+    text-align: center;
+    background-color: #ff6600;
+    color: white;
+    padding: 10px 20px;
+    margin: 20px 0;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+a:hover {
+    background-color: #e65c00;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.popup input, .popup label {
+    display: block;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.popup button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.popup button:hover {
+    background-color: #e65c00;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+    background-color: #333;
+    color: white;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+nav .logo img {
+    height: 40px;
+}
+
+nav .title {
+    font-size: 1.2em;
+}
+
+nav form button {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+nav form button:hover {
+    background-color: #e60000;
+}
+
+input[type="text"], input[type="date"], input[type="file"] {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+    </style>
+</head>
+<body>
+    <nav style="background-color: #b0b3c6;">
+        <!-- Navigation bar content -->
+        <div class="logo">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %>
+            <form action="/api/auth/logout" method="POST" style="margin-right: 80px;">
+                <button type="submit">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+    <div class="warranty-info" style="margin-top: 10%;">
+        <h1>Driver Upload</h1>
+        <form action="/api/driverManagement/Driver-Upload" method="POST" enctype="multipart/form-data">
+            <label for="version">Driver Version:</label>
+            <input type="text" id="version" name="version" required><br><br>
+            <label for="model">Model:</label>
+            <input type="text" id="model" name="model" pattern="[A-Z\d\s-]*" oninput="this.value = this.value.toUpperCase()" required><br><br>
+            <label for="date">Driver Release Date:</label>
+            <input type="date" id="date" name="date" required><br><br>
+            <label for="driverFile">Upload Driver File:</label>
+            <input type="file" id="driverFile" name="driverFile" required><br><br>
+            <button type="submit">Upload</button>
+        </form>
+
+        <h2>All Drivers</h2>
+        <table id="driversTable">
+            <thead>
+                <tr>
+                    <th>Version</th>
+                    <th>Model</th>
+                    <th>Release Date</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% drivers.forEach(driver => { %>
+                    <tr>
+                        <td><%= driver.version %></td>
+                        <td><%= driver.model %></td>
+                        <td><%= new Date(driver.date).toDateString() %></td>
+                        <td><a href="https://bitbox-admin.onrender.com<%= driver.downloadLink %>">LINK</a></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

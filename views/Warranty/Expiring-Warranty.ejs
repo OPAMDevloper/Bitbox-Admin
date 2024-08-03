@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiring Warranties</title>
+    <link rel="stylesheet" href="/css/Expiring-Warranties.css">
+</head>
+<body>
+    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1em; background-color: #b0b3c6; color: white; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+        <div class="logo" style="font-size: 1.5em;">
+            <img src="/images/BitBox_logo1.png" alt="">
+        </div>
+        <div class="title" style="font-size: 1.2em; margin-right: 25px;color: black;font-weight: 600;">
+            Bitbox Admin Panel
+        </div>
+        <% if (loggedIN) { %> <!-- Check if user is logged in -->
+            <form action="/api/auth/logout" method="POST" style="margin-right: 50px;">
+                <button type="submit" style="background-color: #ff0000; color: white; border: none; padding: 10px; font-size: 1em; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease;">Logout</button>
+            </form>
+        <% } %>
+    </nav>
+
+   
+
+    <div class="expiring-warranties" style="text-align: center; justify-content: center;">
+        Search : <input type="text" id="searchInput" placeholder="Search by Serial Number" style="margin: 20px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 50%; margin: auto 0;">
+        <br>
+        <label for="searchDate">Search by Expiry Date: </label>
+        <input type="date"id="searchDate" style="margin: 20px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 50%; margin: auto 0;">
+        <button id="dateSearchButton" style="margin: 20px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: orange; color: white;">Search</button>
+        <h2>Recently Expiring Warranties</h2>
+        <ul></ul>
+        <div id="notFoundMessage" style="display: none; color: red; font-weight: bold;">Not Found</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const searchDate = document.getElementById('searchDate');
+    const dateSearchButton = document.getElementById('dateSearchButton');
+    const warrantiesList = document.querySelector('.expiring-warranties ul');
+    const notFoundMessage = document.getElementById('notFoundMessage');
+
+    fetch('/api/warrantyManagement/expiring-warranty')
+        .then(response => response.json())
+        .then(data => {
+            const renderWarranties = (warranties) => {
+                warrantiesList.innerHTML = '';
+                warranties.forEach(warranty => {
+                    const { name, email, serialNumber, purchaseDate, expiryDate, address, city, pincode, state, phoneNumber, model } = warranty;
+                    const formattedExpiryDate = new Date(expiryDate).toLocaleDateString();
+
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <p>Name: ${name}</p>
+                        <p>Email: ${email}</p>
+                        <p>Serial Number: ${serialNumber}</p>
+                        <p>Purchase Date: ${new Date(purchaseDate).toLocaleDateString()}</p>
+                        <p>Expiry Date: ${formattedExpiryDate}</p>
+                        <p>Address: ${address}</p>
+                        <p>City: ${city}</p>
+                        <p>Pincode: ${pincode}</p>
+                        <p>State: ${state}</p>
+                        <p>Phone Number: ${phoneNumber}</p>
+                        <p>Model: ${model}</p>
+                        <button class="notify-button" data-email="${email}" data-serial="${serialNumber}" data-expiry="${expiryDate}">Notify</button>
+                    `;
+                    warrantiesList.appendChild(listItem);
+                });
+            };
+
+            renderWarranties(data);
+
+            const showNotFoundMessage = () => {
+                notFoundMessage.style.display = 'block';
+            };
+
+            const removeNotFoundMessage = () => {
+                notFoundMessage.style.display = 'none';
+            };
+
+            // Add event listener to search input
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                const items = warrantiesList.querySelectorAll('li');
+                let found = false;
+
+                items.forEach(item => {
+                    const serialNumber = item.querySelector('p:nth-child(3)').textContent.toLowerCase();
+                    if (serialNumber.includes(searchTerm)) {
+                        item.style.display = 'block';
+                        found = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (!found) {
+                    showNotFoundMessage();
+                } else {
+                    removeNotFoundMessage();
+                }
+            });
+
+            // Add event listener to date search button
+            dateSearchButton.addEventListener('click', () => {
+                const searchDateValue = searchDate.value;
+                const items = warrantiesList.querySelectorAll('li');
+                let found = false;
+
+                items.forEach(item => {
+                    const expiryDate = item.querySelector('p:nth-child(5)').textContent;
+                    if (expiryDate === searchDateValue) {
+                        item.style.display = 'block';
+                        found = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (!found) {
+                    showNotFoundMessage();
+                } else {
+                    removeNotFoundMessage();
+                }
+            });
+
+            // Add event listener to Notify buttons
+            warrantiesList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('notify-button')) {
+                    const email = event.target.getAttribute('data-email');
+                    const serialNumber = event.target.getAttribute('data-serial');
+                    const expiryDate = event.target.getAttribute('data-expiry');
+
+                    // Encode parameters for URL
+                    const encodedEmail = encodeURIComponent(email);
+                    const encodedSerialNumber = encodeURIComponent(serialNumber);
+                    const encodedExpiryDate = encodeURIComponent(expiryDate);
+
+                    fetch(`/api/warrantyManagement/send-notification?email=${encodedEmail}&serialNumber=${encodedSerialNumber}&expiryDate=${encodedExpiryDate}`)
+                        .then(response => {
+                            if (response.ok) {
+                                alert('Notification email sent successfully.');
+                            } else {
+                                alert('Failed to send notification email.');
+                            }
+                        })
+                        .catch(error => console.error('Error sending notification:', error));
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching expiring warranties:', error));
+});
+
+    </script>
+</body>
+</html>
